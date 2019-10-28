@@ -68,6 +68,9 @@ output_layer = torch.matmul(hidden_1, weight_2)
 print(output_layer)
 
 #neural net in pytorch style
+import torch
+import torch.nn as nn
+
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
