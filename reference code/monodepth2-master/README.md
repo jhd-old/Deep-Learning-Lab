@@ -249,3 +249,34 @@ You can download our precomputed disparity predictions from the following links:
 Copyright © Niantic, Inc. 2019. Patent Pending.
 All rights reserved.
 Please see the [license file](LICENSE) for terms.
+
+
+## Some useful commands 
+- checking GPU usage 
+```
+  nvidia-smi
+```
+
+- remote logging in to another PC through terminal 
+```
+  ssh -X (PC name)
+```  
+
+- Check running process 
+```	 
+  htop
+  exit: cntl + c
+```
+
+- Assigning GPU for training 
+```
+  CUDA_VISIBLE_DEVICES=(id)
+```
+
+- Screen / tmux 
+```
+  creating window:	screen -S (name)
+  (temporarily) closing window:	cntl + a + d
+  resuming window:	screen -r (name)
+  killing window:		exit
+```
