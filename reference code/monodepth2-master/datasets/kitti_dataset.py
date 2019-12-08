@@ -165,8 +165,8 @@ class KITTISuperpixelDataset(KITTIDataset):
         images in this item. This ensures that all images input to the pose network receive the
         same augmentation.
         """
-        for im in list(inputs):
-            frame = inputs[k]
+        for k in list(inputs):
+            #frame = inputs[k]
             if "color" in k:
                 n, im, i = k
                 inputs[(n, im, i)] = get_painted_superpixel_image(inputs[(n, im, i)], algo= 'fz')
