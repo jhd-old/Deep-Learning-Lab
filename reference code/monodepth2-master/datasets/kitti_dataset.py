@@ -13,6 +13,7 @@ import PIL.Image as pil
 
 from kitti_utils import generate_depth_map
 from .mono_dataset import MonoDataset
+from layers import get_painted_superpixel_image, paint_region_with_avg_intensity
 
 
 class KITTIDataset(MonoDataset):
@@ -126,4 +127,63 @@ class KITTIDepthDataset(KITTIDataset):
         if do_flip:
             depth_gt = np.fliplr(depth_gt)
 
+        return depth_gt
+
+# New Dataloader/Dataset with modified preprocessing which now includes a Superpixel step
+class KITTISuperpixelDataset(KITTIDataset):
+    """KITTI dataset which loads the original velodyne depth maps for ground truth
+    """
+    def __init__(self, *args, **kwargs):
+        super(KITTISuperpixelDataset, self).__init__(*args, **kwargs)
+
+    def get_image_path(self, folder, frame_index, side):
+        f_str = "{:010d}{}".format(frame_index, self.img_ext)
+        image_path = os.path.join(
+            self.data_path, folder, "image_0{}/data".format(self.side_map[side]), f_str)
+        return image_path
+
+    def get_depth(self, folder, frame_index, side, do_flip):
+        calib_path = os.path.join(self.data_path, folder.split("/")[0])
+
+        velo_filename = os.path.join(
+            self.data_path,
+            folder,
+            "velodyne_points/data/{:010d}.bin".format(int(frame_index)))
+
+        depth_gt = generate_depth_map(calib_path, velo_filename, self.side_map[side])
+        depth_gt = skimage.transform.resize(
+            depth_gt, self.full_res_shape[::-1], order=0, preserve_range=True, mode='constant')
+
+        if do_flip:
+            depth_gt = np.fliplr(depth_gt)
+
+    # Overwrite preprocess from Monodataset
+    def preprocess(self, inputs, color_aug):
+        """Resize colour images to the required scales and augment if required
+
+        We create the color_aug object in advance and apply the same augmentation to all
+        images in this item. This ensures that all images input to the pose network receive the
+        same augmentation.
+        """
+        for im in list(inputs):
+            frame = inputs[k]
+            if "color" in k:
+                n, im, i = k
+                inputs[(n, im, i)] = get_painted_superpixel_image(inputs[(n, im, i)], algo= 'fz')
+
+        for k in list(inputs):
+            frame = inputs[k]
+            if "color" in k:
+                n, im, i = k
+                for i in range(self.num_scales):
+                    inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+
+        for k in list(inputs):
+            f = inputs[k]
+            if "color" in k:
+                n, im, i = k
+                inputs[(n, im, i)] = self.to_tensor(f)
+                inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
+
+        
         return depth_gt
