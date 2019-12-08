@@ -265,7 +265,7 @@ Please see the [license file](LICENSE) for terms.
 - Check running process 
 ```	 
   htop
-  exit: cntl + c
+  exit: ctrl + c
 ```
 
 - Assigning GPU for training 
