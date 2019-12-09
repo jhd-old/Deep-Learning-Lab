@@ -260,6 +260,7 @@ Please see the [license file](LICENSE) for terms.
 - remote logging in to another PC through terminal 
 ```
   ssh -X (PC name)
+  On Mac: ssh (Username_remote)@(IP-adress_remote)
 ```  
 
 - Check running process 
