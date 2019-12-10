@@ -84,20 +84,6 @@ def save_img(img, path):
 
     imsave(path, img)
 
-def avg_img_in_superpixel(img, superpixel):
-    """
-
-    :param img:
-    :param superpixel:
-    :return:
-    """
-
-    min_ind = np.min(superpixel)
-    max_ind = np.max(superpixel)
-
-    for i in range(min_ind, max_ind+1):
-        np.where(img is i) = 
-
 def calc_superpixel(img, method=None):
     """
 
