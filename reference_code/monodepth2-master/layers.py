@@ -276,17 +276,27 @@ def compute_depth_errors(gt, pred):
 
 # Code from https://stackoverflow.com/questions/53155771/average-colour-of-slic-superpixel
 #rp = regrionprobs mi = mean intensity
+
+
 def paint_region_with_avg_intensity(rp, mi, channel):
     for i in range(rp.shape[0]):
         img[rp[i][0]][rp[i][1]][channel] = mi
 
-def get_painted_superpixel_image(img,algo = 'slic'):
+
+def get_painted_superpixel_image(img, algo='slic'):
+    """
+    Description
+
+    :param img:
+    :param algo:
+    :return:
+    """
 
     #felzenszwalb 
     if algo == 'fz':
         segments = seg.felzenszwalb(img, scale=100, sigma=0.5, min_size=50)
     elif algo == 'slic':
-        segments  = seg.slic(img, n_segments=250, compactness=10, sigma=1)
+        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
     elif algo == 'quick':
         segments = seg.quickshift(img, kernel_size=3, max_dist=6, ratio=0.5)
     elif algo == 'water':
@@ -294,7 +304,7 @@ def get_painted_superpixel_image(img,algo = 'slic'):
         segments = seg.watershed(gradient, markers=250, compactness=0.001)
     else:
         #default specified algo is implemented
-        segments  = seg.slic(img, n_segments=250, compactness=10, sigma=1)
+        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
     
 
     for i in range(3):
