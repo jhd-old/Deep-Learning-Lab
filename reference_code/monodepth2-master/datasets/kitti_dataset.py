@@ -13,7 +13,7 @@ import PIL.Image as pil
 
 from kitti_utils import generate_depth_map
 from .mono_dataset import MonoDataset
-from layers import get_painted_superpixel_image, paint_region_with_avg_intensity
+from utils import get_painted_superpixel_image, paint_region_with_avg_intensity
 
 
 class KITTIDataset(MonoDataset):
