@@ -10,6 +10,12 @@ import hashlib
 import zipfile
 from six.moves import urllib
 
+# packages for Superpixels
+import skimage.segmentation as seg
+from skimage.measure import regionprops
+from skimage.color import rgb2gray
+from skimage.filters import sobel
+
 
 def readlines(filename):
     """Read all the lines in a text file and return as a list
@@ -112,3 +118,54 @@ def download_model_if_doesnt_exist(model_name):
             f.extractall(model_path)
 
         print("   Model unzipped to {}".format(model_path))
+
+
+# Code from https://stackoverflow.com/questions/53155771/average-colour-of-slic-superpixel
+# rp = regrionprobs mi = mean intensity
+
+
+def paint_region_with_avg_intensity(img, rp, mi, channel):
+    """
+    paint
+
+    :param img: image to paint on
+    :param rp: region probs
+    :param mi: mean intensity
+    :param channel: current channel
+    :return: painted image
+    """
+    for i in range(rp.shape[0]):
+        img[rp[i][0]][rp[i][1]][channel] = mi
+
+    return img
+
+
+def get_painted_superpixel_image(img, algo='slic'):
+    """
+    Description
+
+    :param img:
+    :param algo:
+    :return:
+    """
+
+    # felzenszwalb
+    if algo == 'fz':
+        segments = seg.felzenszwalb(img, scale=100, sigma=0.5, min_size=50)
+    elif algo == 'slic':
+        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
+    elif algo == 'quick':
+        segments = seg.quickshift(img, kernel_size=3, max_dist=6, ratio=0.5)
+    elif algo == 'water':
+        gradient = sobel(rgb2gray(img))
+        segments = seg.watershed(gradient, markers=250, compactness=0.001)
+    else:
+        # default specified algo is implemented
+        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
+
+    for i in range(3):
+        regions = regionprops(segments, intensity_image=img[:, :, i])
+        for r in regions:
+            img = paint_region_with_avg_intensity(img, r.coords, int(r.mean_intensity), i)
+
+    return img

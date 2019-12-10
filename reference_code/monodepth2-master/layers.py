@@ -8,12 +8,6 @@ from __future__ import absolute_import, division, print_function
 
 import numpy as np
 
-# packages for Superpixels
-import skimage.segmentation as seg
-from skimage.measure import regionprops
-from skimage.color import rgb2gray
-from skimage.filters import sobel
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -273,43 +267,3 @@ def compute_depth_errors(gt, pred):
     sq_rel = torch.mean((gt - pred) ** 2 / gt)
 
     return abs_rel, sq_rel, rmse, rmse_log, a1, a2, a3
-
-# Code from https://stackoverflow.com/questions/53155771/average-colour-of-slic-superpixel
-#rp = regrionprobs mi = mean intensity
-
-
-def paint_region_with_avg_intensity(rp, mi, channel):
-    for i in range(rp.shape[0]):
-        img[rp[i][0]][rp[i][1]][channel] = mi
-
-
-def get_painted_superpixel_image(img, algo='slic'):
-    """
-    Description
-
-    :param img:
-    :param algo:
-    :return:
-    """
-
-    #felzenszwalb 
-    if algo == 'fz':
-        segments = seg.felzenszwalb(img, scale=100, sigma=0.5, min_size=50)
-    elif algo == 'slic':
-        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
-    elif algo == 'quick':
-        segments = seg.quickshift(img, kernel_size=3, max_dist=6, ratio=0.5)
-    elif algo == 'water':
-        gradient = sobel(rgb2gray(img))
-        segments = seg.watershed(gradient, markers=250, compactness=0.001)
-    else:
-        #default specified algo is implemented
-        segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
-    
-
-    for i in range(3):
-        regions = regionprops(segments, intensity_image=img[:,:,i])
-        for r in regions:
-            paint_region_with_avg_intensity(r.coords, int(r.mean_intensity), i)
-
-    return img

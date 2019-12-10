@@ -130,9 +130,8 @@ class KITTIDepthDataset(KITTIDataset):
         return depth_gt
 
 
-# New Dataloader/Dataset with modified preprocessing which now includes a Superpixel step
 class KITTISuperpixelDataset(KITTIDataset):
-    """KITTI dataset which loads the original velodyne depth maps for ground truth
+    """KITTI dataset which takes with superpixel modified images instead of the standard images
     """
     def __init__(self, *args, **kwargs):
         super(KITTISuperpixelDataset, self).__init__(*args, **kwargs)
