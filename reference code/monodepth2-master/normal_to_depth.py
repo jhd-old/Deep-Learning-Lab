@@ -14,8 +14,13 @@ def normal_to_depth(K, d_im, normal):
             pt_3d = K_inv.dot(pixel)
             depth[x, y] = 1/(normal[x, y, :].dot(pt_3d))
 
-    maxval = depth.max()
-    minval = depth.min()
-    normal_depth = (depth - minval) / (maxval - minval)
-    
-    return normal_depth
+    return depth
+
+
+def depth_to_disp(K, depth):
+    h, w = depth.shape
+    focallength = K[1, 1] * w
+    baseline = 0.54
+    disp = (baseline*focallength) / (depth + 1e-8)
+
+    return disp
