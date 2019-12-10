@@ -156,6 +156,8 @@ class KITTISuperpixelDataset(KITTIDataset):
 
         if do_flip:
             depth_gt = np.fliplr(depth_gt)
+        
+        return depth_gt
 
     # Overwrite preprocess from Monodataset
     def preprocess(self, inputs, color_aug):
@@ -186,4 +188,3 @@ class KITTISuperpixelDataset(KITTIDataset):
                 inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
 
         
-        return depth_gt
