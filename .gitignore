@@ -8,3 +8,7 @@ superpixel/test/eval_org.avi
 *.pyc
 
 superpixel/.idea/workspace.xml
+
+superpixel/test/eval.avi
+
+superpixel/first_results.pptx
