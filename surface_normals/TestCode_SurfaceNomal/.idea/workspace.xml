@@ -14,13 +14,18 @@
       </list>
     </option>
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
+  </component>
   <component name="ProjectId" id="1UbuOYkjxFS4tUtkFlXk4uU1500" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showExcludedFiles" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/main.py" />
     <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
   </component>
@@ -71,6 +76,44 @@
       <updated>1575637585382</updated>
     </task>
     <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state width="1515" height="266" key="GridCell.Tab.0.bottom" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.0.bottom/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.0.center" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.0.center/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.0.left" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.0.left/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.0.right" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.0.right/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.1.bottom" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.1.bottom/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.1.center" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.1.center/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.1.left" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.1.left/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state width="1515" height="266" key="GridCell.Tab.1.right" timestamp="1575988582503">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state width="1515" height="266" key="GridCell.Tab.1.right/0.0.1536.824@0.0.1536.824" timestamp="1575988582503" />
+    <state x="279" y="55" key="SettingsEditor" timestamp="1575988121192">
+      <screen x="0" y="0" width="1536" height="824" />
+    </state>
+    <state x="279" y="55" key="SettingsEditor/0.0.1536.824@0.0.1536.824" timestamp="1575988121192" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
