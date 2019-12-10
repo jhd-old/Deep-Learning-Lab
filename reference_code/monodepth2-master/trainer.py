@@ -52,7 +52,7 @@ class Trainer:
             self.opt.frame_ids.append("s")
 
         self.models["encoder"] = networks.ResnetEncoder(
-            self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_images=2)
+            self.opt.num_layers, self.opt.weights_init == "pretrained")
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
@@ -111,10 +111,8 @@ class Trainer:
         print("Training is using:\n  ", self.device)
 
         # data
-        # added Kitti_Superpixel Entry
         datasets_dict = {"kitti": datasets.KITTIRAWDataset,
-                         "kitti_odom": datasets.KITTIOdomDataset,
-                         "kitti_superpixel": datasets.KITTISuperpixelDataset}
+                         "kitti_odom": datasets.KITTIOdomDataset}
         self.dataset = datasets_dict[self.opt.dataset]
 
         fpath = os.path.join(os.path.dirname(__file__), "splits", self.opt.split, "{}_files.txt")
