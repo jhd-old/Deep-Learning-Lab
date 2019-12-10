@@ -25,6 +25,8 @@ import datasets
 import networks
 from IPython import embed
 
+import normal_to_depth as nd
+
 
 class Trainer:
     def __init__(self, options):
@@ -344,8 +346,19 @@ class Trainer:
         """Generate the warped (reprojected) color images for a minibatch.
         Generated images are saved into the `outputs` dictionary.
         """
+        ###
+        #edit by Jan
+
+
+
         for scale in self.opt.scales:
-            disp = outputs[("disp", scale)]
+
+            # disp = outputs[("disp", scale)]
+            normal_vec = outputs[("normal_vec"), scale]
+
+            norm2depth = normal_to_depth.normal_to_depth(self.K.copy(), [self.opt.height, self.opt.width], normal_vec)
+            disp = normal_to_depth.depth_to_disp(self.K.copy(), norm2depth)
+
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
