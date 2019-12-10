@@ -132,6 +132,11 @@ class MonodepthOptions:
                                  help="normal or shared",
                                  default="separate_resnet",
                                  choices=["posecnn", "separate_resnet", "shared"])
+        self.parser.add_argument("--decoder",
+                                 type=str,
+                                 help="standart or normal_vector",
+                                 default="standart",
+                                 choices=["standart", "normal_vector"])
 
         # SYSTEM options
         self.parser.add_argument("--no_cuda",

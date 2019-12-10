@@ -58,8 +58,13 @@ class Trainer:
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
-        self.models["depth"] = networks.DepthDecoder(
-            self.models["encoder"].num_ch_enc, self.opt.scales)
+        if self.opt.decoder == "standart":
+            self.models["depth"] = networks.DepthDecoder(
+                self.models["encoder"].num_ch_enc, self.opt.scales)
+        elif self.opt.decoder == "normal_vector":
+            self.models["depth"] = networks.NormalDecoder(
+                self.models["encoder"].num_ch_enc, self.opt.scales)
+
         self.models["depth"].to(self.device)
         self.parameters_to_train += list(self.models["depth"].parameters())
 
@@ -347,15 +352,13 @@ class Trainer:
         ###
         #edit by Jan
 
-
-
         for scale in self.opt.scales:
 
             # disp = outputs[("disp", scale)]
             normal_vec = outputs[("normal_vec"), scale]
 
-            norm2depth = normal_to_depth.normal_to_depth(self.K.copy(), [self.opt.height, self.opt.width], normal_vec)
-            disp = normal_to_depth.depth_to_disp(self.K.copy(), norm2depth)
+            norm2depth = nd.normal_to_depth(self.K.copy(), [self.opt.height, self.opt.width], normal_vec)
+            disp = nd.depth_to_disp(self.K.copy(), norm2depth)
 
             if self.opt.v1_multiscale:
                 source_scale = scale
