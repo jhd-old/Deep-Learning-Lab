@@ -171,7 +171,8 @@ class KITTISuperpixelDataset(KITTIDataset):
             frame = inputs[k]
             if "color" in k:
                 n, im, i = k
-                inputs[(n, im, i)] = get_painted_superpixel_image(self.resize[i](inputs[(n, im, i - 1)]), algo='fz')
+
+                inputs[(n, im, i)] = get_painted_superpixel_image(self.resize[i](inputs[(n, im, i - 1)]), algo='slic')
 
         for k in list(inputs):
             f = inputs[k]
