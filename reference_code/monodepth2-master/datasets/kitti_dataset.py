@@ -168,17 +168,11 @@ class KITTISuperpixelDataset(KITTIDataset):
         same augmentation.
         """
         for k in list(inputs):
-            #frame = inputs[k]
-            if "color" in k:
-                n, im, i = k
-                inputs[(n, im, i)] = get_painted_superpixel_image(inputs[(n, im, i)], algo='fz')
-
-        for k in list(inputs):
             frame = inputs[k]
             if "color" in k:
                 n, im, i = k
-                for i in range(self.num_scales):
-                    inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+                inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+                inputs[(n, im, i)] = get_painted_superpixel_image(inputs[(n, im, i)], algo='fz')
 
         for k in list(inputs):
             f = inputs[k]
@@ -186,5 +180,4 @@ class KITTISuperpixelDataset(KITTIDataset):
                 n, im, i = k
                 inputs[(n, im, i)] = self.to_tensor(f)
                 inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
-
 
