@@ -356,8 +356,8 @@ class Trainer:
 
             # disp = outputs[("disp", scale)]
             normal_vec = outputs[("normal_vec"), scale]
-
-            norm2depth = nd.normal_to_depth(self.K.copy(), [self.opt.height, self.opt.width], normal_vec)
+            K = MonoDataset("K", 0)
+            norm2depth = nd.normal_to_depth(K, [self.opt.height, self.opt.width], normal_vec)
             disp = nd.depth_to_disp(self.K.copy(), norm2depth)
 
             if self.opt.v1_multiscale:
