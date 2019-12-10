@@ -1,0 +1,24 @@
+kitti dataset intrinsic kamera parameter in mono_dataset.py
+
+
+new suggestions:
+monodepth 1 manipulations
+monodepth 2 manipulations and agree on more time <-- agree on that
+
+np.linalg.pinv(K)
+do matrix calculations with np.dot()
+
+
+depth
+disparity
+    d=bf/d
+
+enter function inside
+trainer.py
+    generate images pred
+
+
+in depth depcoder change output
+in self.generate images pred
+self.output("can call output here") -- we can call the output here
+
