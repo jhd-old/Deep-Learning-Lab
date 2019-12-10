@@ -17,4 +17,6 @@ if __name__ == "__main__":
     #surface_normal_2.surface_normal('data/test_img.png')
     normal, d_im = surface_normal_3.surface_normal('data/test_img.png')
     depth = normal_to_depth.normal_to_depth(K, d_im, normal)
-    cv2.imwrite("normal2depth.png", depth*255)
+    disp = normal_to_depth.depth_to_disp(K, depth)
+
+    cv2.imwrite("normal2depth.png", disp*255)
