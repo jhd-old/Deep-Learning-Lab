@@ -16,14 +16,17 @@ import torch
 import torch.utils.data as data
 from torchvision import transforms
 from utils import get_painted_superpixel_image
-
+from matplotlib import pyplot as plt
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning
     # (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         with Image.open(f) as img:
-            return Image.fromarray(get_painted_superpixel_image(np.asarray(img.convert('RGB')), algo='fz'))
+            im = get_painted_superpixel_image(np.asarray(img.convert('RGB')), algo='fz')
+            plt.imshow(im)
+            plt.show()
+            return Image.fromarray(im)
 
 
 class MonoDatasetKITTI(data.Dataset):

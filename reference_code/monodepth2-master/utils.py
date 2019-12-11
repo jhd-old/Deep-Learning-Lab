@@ -120,18 +120,18 @@ def download_model_if_doesnt_exist(model_name):
         print("   Model unzipped to {}".format(model_path))
 
 
-def mean_image(image,label):
+def mean_image(image, label):
 
-    im_rp=image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
-    sli_1d=np.reshape(label,-1)
-    uni=np.unique(sli_1d)
-    uu=np.zeros(im_rp.shape)
+    im_rp = image.reshape((image.shape[0]*image.shape[1], image.shape[2]))
+    sli_1d = np.reshape(label, -1)
+    uni = np.unique(sli_1d)
+    uu = np.zeros(im_rp.shape)
     for i in uni:
-        loc=np.where(sli_1d==i)[0]
+        loc = np.where(sli_1d == i)[0]
         #print(loc)
-        mm=np.mean(im_rp[loc,:],axis=0)
-        uu[loc,:]=mm
-    oo=np.reshape(uu,[image.shape[0],image.shape[1],image.shape[2]]).astype('uint8')
+        mm = np.mean(im_rp[loc, :], axis=0)
+        uu[loc, :] = mm
+    oo = np.reshape(uu, [image.shape[0], image.shape[1], image.shape[2]]).astype('uint8')
 
     return oo
 
@@ -178,6 +178,6 @@ def get_painted_superpixel_image(img, algo='slic'):
         # default specified algo is implemented
         segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
 
-    mean_image(img, segments)
+    img = mean_image(img, segments)
 
     return img
