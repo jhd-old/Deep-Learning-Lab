@@ -23,7 +23,7 @@ def pil_loader(path):
     # (https://github.com/python-pillow/Pillow/issues/835)
     with open(path, 'rb') as f:
         with Image.open(f) as img:
-            return img.convert('RGB')
+            return Image.fromarray(get_painted_superpixel_image(np.asarray(img.convert('RGB')), algo='fz'))
 
 
 class MonoDatasetKITTI(data.Dataset):
@@ -100,8 +100,9 @@ class MonoDatasetKITTI(data.Dataset):
             if "color" in k:
                 n, im, i = k
                 for i in range(self.num_scales):
-                    img = np.asarray(self.resize[i](inputs[(n, im, i - 1)]))
-                    inputs[(n, im, i)] = Image.fromarray(get_painted_superpixel_image(img, algo='fz'))
+                    #img = np.asarray(self.resize[i](inputs[(n, im, i - 1)]))
+                    inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+                    #inputs[(n, im, i)] = Image.fromarray(get_painted_superpixel_image(img, algo='fz'))
 
         for k in list(inputs):
             f = inputs[k]
@@ -109,6 +110,8 @@ class MonoDatasetKITTI(data.Dataset):
                 n, im, i = k
                 inputs[(n, im, i)] = self.to_tensor(f)
                 inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
+
+        #print(inputs)
 
     def __len__(self):
         return len(self.filenames)
