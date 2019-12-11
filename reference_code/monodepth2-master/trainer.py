@@ -5,6 +5,7 @@
 # available in the LICENSE file.
 
 from __future__ import absolute_import, division, print_function
+from torchvision import transforms
 
 import numpy as np
 import time
@@ -24,6 +25,9 @@ from layers import *
 import datasets
 import networks
 from IPython import embed
+
+#Superpixel
+from utils import get_painted_superpixel_image, paint_region_with_avg_intensity
 
 
 class Trainer:
@@ -51,8 +55,13 @@ class Trainer:
         if self.opt.use_stereo:
             self.opt.frame_ids.append("s")
 
-        self.models["encoder"] = networks.ResnetEncoder(
-            self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_images=2)
+        if self.opt.depth_encoder_type == "normal":
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained")
+        elif self.opt.depth_encoder_type == "6channel":
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_images=2)
+
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
@@ -245,6 +254,22 @@ class Trainer:
                 features[k] = [f[i] for f in all_features]
 
             outputs = self.models["depth"](features[0])
+
+
+        # Not yet implemented, Second input should be the batch superpixel converted
+        elif self.opt.depth_encoder_type == "6channel":
+            trans = transforms.ToPILImage()
+            trans1 = transforms.ToTensor()
+            tensor = inputs["color_aug", 0, 0]
+
+            for i in range(tensor[i].shape):
+                img = np.asarray(trans(tensor(i)))
+                img_sp = get_painted_superpixel_image(img)
+                img_sp = Image.fromArray(img_sp)
+                tensor[i] = trans1(img_sp)
+
+            features = self.models["encoder"](inputs["color_aug", 0, 0, tensor], secondInput = 0)
+            outputs = self.models["depth"](features)
         else:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
             features = self.models["encoder"](inputs["color_aug", 0, 0])

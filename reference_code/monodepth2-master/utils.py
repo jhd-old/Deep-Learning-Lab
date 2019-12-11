@@ -148,7 +148,8 @@ def get_painted_superpixel_image(img, algo='slic'):
     :param algo:
     :return:
     """
-
+    img.setflags(write=1)
+    
     # felzenszwalb
     if algo == 'fz':
         segments = seg.felzenszwalb(img, scale=120, sigma=1.3, min_size=75)
@@ -165,8 +166,11 @@ def get_painted_superpixel_image(img, algo='slic'):
 
     for i in range(3):
         regions = regionprops(segments, intensity_image=img[:, :, i])
-
         for r in regions:
-            img = paint_region_with_avg_intensity(img, r.coords, int(r.mean_intensity), i)
+            rp = r.coords
+            mi = int(r.mean_intensity)
+            for k in range(rp.shape[0]):
+                img[rp[k][0]][rp[i][1]][i] = mi
+            #img = paint_region_with_avg_intensity(img, r.coords, int(r.mean_intensity), i)
 
     return img

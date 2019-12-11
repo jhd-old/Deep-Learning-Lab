@@ -133,6 +133,11 @@ class MonodepthOptions:
                                  help="normal or shared",
                                  default="separate_resnet",
                                  choices=["posecnn", "separate_resnet", "shared"])
+        self.parser.add_argument("--depth_encoder_type",
+                                 type=str,
+                                 help="normal or 6 channel for superpixel and RGB",
+                                 default="normal",
+                                 choices=["normal", "6channel"])
 
         # SYSTEM options
         self.parser.add_argument("--no_cuda",
