@@ -13,10 +13,11 @@ import PIL.Image as pil
 
 from kitti_utils import generate_depth_map
 from .mono_dataset import MonoDataset
-from utils import get_painted_superpixel_image, paint_region_with_avg_intensity
+from .mono_dataset_kitti import MonoDatasetKITTI
+from utils import get_painted_superpixel_image, paint_region_with_avg_intensity, mean_image
 
 
-class KITTIDataset(MonoDataset):
+class KITTIDataset(MonoDatasetKITTI):
     """Superclass for different types of KITTI dataset loaders
     """
     def __init__(self, *args, **kwargs):
@@ -130,7 +131,7 @@ class KITTIDepthDataset(KITTIDataset):
         return depth_gt
 
 
-class KITTISuperpixelDataset(KITTIDataset):
+class KITTISuperpixelDataset(KITTIRAWDataset):
     """KITTI dataset which takes with superpixel modified images instead of the standard images
     """
     def __init__(self, *args, **kwargs):
@@ -159,25 +160,4 @@ class KITTISuperpixelDataset(KITTIDataset):
 
         return depth_gt
 
-    # Overwrite preprocess from Monodataset
-    def preprocess(self, inputs, color_aug):
-        """Resize colour images to the required scales and augment if required
-
-        We create the color_aug object in advance and apply the same augmentation to all
-        images in this item. This ensures that all images input to the pose network receive the
-        same augmentation.
-        """
-        for k in list(inputs):
-            frame = inputs[k]
-            if "color" in k:
-                n, im, i = k
-
-                inputs[(n, im, i)] = get_painted_superpixel_image(self.resize[i](inputs[(n, im, i - 1)]), algo='slic')
-
-        for k in list(inputs):
-            f = inputs[k]
-            if "color" in k:
-                n, im, i = k
-                inputs[(n, im, i)] = self.to_tensor(f)
-                inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
 

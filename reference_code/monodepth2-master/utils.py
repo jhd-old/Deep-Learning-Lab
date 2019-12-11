@@ -9,7 +9,7 @@ import os
 import hashlib
 import zipfile
 from six.moves import urllib
-
+import numpy as np
 # packages for Superpixels
 import skimage.segmentation as seg
 from skimage.measure import regionprops
@@ -120,6 +120,21 @@ def download_model_if_doesnt_exist(model_name):
         print("   Model unzipped to {}".format(model_path))
 
 
+def mean_image(image,label):
+
+    im_rp=image.reshape((image.shape[0]*image.shape[1],image.shape[2]))
+    sli_1d=np.reshape(label,-1)
+    uni=np.unique(sli_1d)
+    uu=np.zeros(im_rp.shape)
+    for i in uni:
+        loc=np.where(sli_1d==i)[0]
+        #print(loc)
+        mm=np.mean(im_rp[loc,:],axis=0)
+        uu[loc,:]=mm
+    oo=np.reshape(uu,[image.shape[0],image.shape[1],image.shape[2]]).astype('uint8')
+
+    return oo
+
 # Code from https://stackoverflow.com/questions/53155771/average-colour-of-slic-superpixel
 # rp = regrionprobs mi = mean intensity
 
@@ -163,10 +178,6 @@ def get_painted_superpixel_image(img, algo='slic'):
         # default specified algo is implemented
         segments = seg.slic(img, n_segments=250, compactness=10, sigma=1)
 
-    for i in range(3):
-        regions = regionprops(segments, intensity_image=img[:, :, i])
-
-        for r in regions:
-            img = paint_region_with_avg_intensity(img, r.coords, int(r.mean_intensity), i)
+    mean_image(img, segments)
 
     return img
