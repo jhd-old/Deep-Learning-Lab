@@ -2,40 +2,43 @@ import numpy as np
 import torch
 
 
-def normal_to_depth(K, d_im, normal):
+def normal_to_depth(K_inv, d_im, normal):
 
-    # Konvertierung in Numpy
-    K = K.numpy()
-    normal = normal.numpy()
+    K_inv.cuda().float()
+    normal.cuda()
+    print(normal[11, :, :, :])
+    K_inv = K_inv[0, 0:3, 0:3]
 
-    # Funktion Normal to depth
-    h = d_im[0]
-    w = d_im[1]
+    batch_size = torch.tensor(normal[:, 0, 0, 0].size())
 
-    depth = np.zeros((h, w))
-    K_inv = np.linalg.pinv(K)
-    for x in range(0, h):
-        for y in range(0, w):
-            pixel = np.array([x, y, 1])
-            pt_3d = K_inv.dot(pixel)
-            depth[x, y] = 1/(normal[x, y, :].dot(pt_3d))
+    h = torch.tensor(d_im[0])
+    w = torch.tensor(d_im[1])
 
-    # Konvertierung in Torch tensor, nicht nötig da die funtionen aufeinander übergeben
-    # depth = torch.from_numpy(depth_np)
+    depth = torch.empty(batch_size, h, w).cuda()
+    print(depth.size())
+    #K_inv = np.linalg.pinv(K)
+    for n in range(11, batch_size):
+        for x in range(0, h):
+            for y in range(0, w):
+                pixel = torch.tensor([[x], [y], [1]]).float().cuda()
+                pt_3d = torch.mm(K_inv, pixel).cuda()
+                vec_values = normal[n, :, x, y]
+                normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
+                normal_vec = normal_vec.cuda()
+                depth[n, x, y] = 1/(torch.mm(normal_vec, pt_3d))
+    print(depth)
+
     return depth
 
-
 def depth_to_disp(K, depth):
-    # Konvertierung in Numpy
-    K = K.numpy()
-    # depth = depth.numpy()
 
-    # Funktion depth to disp
-    h, w = depth.shape
+    batch, h, w = depth.size()
+    disp = torch.empty(batch, h, w).cuda()
+    K = K[0, 0:3, 0:3]
     focallength = K[1, 1] * w
     baseline = 0.54
-    disp_np = (baseline*focallength) / (depth + 1e-8)
+    for n in range(0, batch):
+        disp[n, :, :] = (baseline*focallength) / (depth[n, :, :] + 1e-8)
+    print(disp[11, :, :])
 
-    # Konvertierung in Torch tensor
-    disp = torch.from_numpy(disp_np)
     return disp
