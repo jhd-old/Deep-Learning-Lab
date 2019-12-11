@@ -263,7 +263,7 @@ class Trainer:
             trans1 = transforms.ToTensor()
             tensor = inputs["color_aug", 0, 0]
 
-            for i in range(tensor[0].shape):
+            for i in range(tensor.shape[0]):
                 img = np.asarray(trans(tensor[i]))
                 img_sp = get_painted_superpixel_image(img)
                 img_sp = Image.fromarray(img_sp)
