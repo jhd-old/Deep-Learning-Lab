@@ -269,7 +269,9 @@ class Trainer:
                 img_sp = Image.fromarray(img_sp)
                 tensor[i] = trans1(img_sp)
 
-            features = self.models["encoder"](inputs["color_aug", 0, 0], tensor)
+            six_channel_inputs = [inputs["color_aug", 0, 0], tensor]
+
+            features = self.models["encoder"](torch.cat(six_channel_inputs, 1))
             outputs = self.models["depth"](features)
         else:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
