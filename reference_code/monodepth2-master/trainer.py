@@ -15,6 +15,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
+from PIL import Image
 
 import json
 
@@ -262,10 +263,10 @@ class Trainer:
             trans1 = transforms.ToTensor()
             tensor = inputs["color_aug", 0, 0]
 
-            for i in range(tensor[i].shape):
+            for i in range(tensor[0].shape):
                 img = np.asarray(trans(tensor(i)))
                 img_sp = get_painted_superpixel_image(img)
-                img_sp = Image.fromArray(img_sp)
+                img_sp = Image.fromarray(img_sp)
                 tensor[i] = trans1(img_sp)
 
             features = self.models["encoder"](inputs["color_aug", 0, 0, tensor], secondInput = 0)
