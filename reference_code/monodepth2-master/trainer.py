@@ -264,7 +264,7 @@ class Trainer:
             tensor = inputs["color_aug", 0, 0]
 
             for i in range(tensor[0].shape):
-                img = np.asarray(trans(tensor(i)))
+                img = np.asarray(trans(tensor[i]))
                 img_sp = get_painted_superpixel_image(img)
                 img_sp = Image.fromarray(img_sp)
                 tensor[i] = trans1(img_sp)
