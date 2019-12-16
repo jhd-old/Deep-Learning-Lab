@@ -14,3 +14,5 @@ superpixel/test/eval.avi
 superpixel/first_results.pptx
 
 reference_code/monodepth2-master/kitti_data_down/
+
+*.avi
