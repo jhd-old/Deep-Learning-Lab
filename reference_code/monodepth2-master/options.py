@@ -83,6 +83,29 @@ class MonodepthOptions:
                                  help="frames to load",
                                  default=[0, -1, 1])
 
+        # SUPERPIXEL options
+
+        self.parser.add_argument("--use_superpixel",
+                                 help="if set, uses superpixel images",
+                                 action="store_true"
+                                 )
+        self.parser.add_argument("--superpixel_method",
+                                 type=str,
+                                 help="method to use for superpixel calculation",
+                                 choices=["fz", "slic", "quickshift", "waterhed"],
+                                 default="fz")
+
+        self.parser.add_argument("--superpixel_arguments",
+                                 nargs="+",
+                                 type=float,
+                                 help="additional arguments for superpixel methods")
+
+        # NORMALS options
+
+        self.parser.add_argument("use_normals",
+                                 help="if set, uses normals",
+                                 action="store_true")
+
         # OPTIMIZATION options
         self.parser.add_argument("--batch_size",
                                  type=int,
