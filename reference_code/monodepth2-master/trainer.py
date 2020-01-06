@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-
+import superpixel_utils
 import json
 
 from utils import *
@@ -112,14 +112,25 @@ class Trainer:
 
         # data
         datasets_dict = {"kitti": datasets.KITTIRAWDataset,
-                         "kitti_odom": datasets.KITTIOdomDataset}
+                         "kitti_odom": datasets.KITTIOdomDataset,
+                         "kitti_superpixel": datasets.SuperpixelDataset}
         self.dataset = datasets_dict[self.opt.dataset]
 
+        #
+        # Get images that should be used for selected data split
+        #
         fpath = os.path.join(os.path.dirname(__file__), "splits", self.opt.split, "{}_files.txt")
 
         train_filenames = readlines(fpath.format("train"))
         val_filenames = readlines(fpath.format("val"))
         img_ext = '.png' if self.opt.png else '.jpg'
+
+        # Check if superpixel dataset is used and create superpixel image
+        if "superpixel" in self.opt.dataset:
+            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                                                       self.opt.superpixel_arguments, img_ext=img_ext)
+            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, val_filenames, self.opt.superpixel_method,
+                                                       self.opt.superpixel_arguments, img_ext=img_ext)
 
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
