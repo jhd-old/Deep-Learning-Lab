@@ -99,9 +99,6 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
         # convert image to superpixel image
         sup_img = avg_image(img, sup)
 
-        plt.imshow(sup_img)
-        plt.show()
-
         # convert numpy img back to PIL Image
         sup_img = Image.fromarray(sup_img)
 
