@@ -10,6 +10,8 @@ from datasets.mono_dataset import pil_loader
 from PIL import Image
 from matplotlib import pyplot as plt
 from pathlib import Path
+import multiprocessing as mp
+
 
 
 def save_superpixel_in_archive(file, data, compressed=True):
@@ -60,31 +62,54 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
     :TODO: finish implementation
     """
+    pool = mp.Pool(mp.cpu_count())
 
-    for i, path in enumerate(paths):
+    print("Starting multiprocessing pool on " + str(mp.cpu_count()) + " kernels.")
 
-        # get image path
+    results = [pool.apply(convert_func, args=(dataset_path, path, superpixel_method, superpixel_arguments,
+                                                      img_ext, path_insert)) for path in paths]
 
-        line = path.split()
-        folder = line[0]
+    pool.close()
 
-        if len(line) == 3:
-            frame_index = int(line[1])
-        else:
-            frame_index = 0
+    print("Pool closed. Finished! Converted " + str(results.count(True)) + "/" + str(len(results)) + " succesfully!")
 
-        if len(line) == 3:
-            side = line[2]
-        else:
-            side = None
 
-        side_map = {"2": 2, "3": 3, "l": 2, "r": 3}
+def convert_func(dataset_path, path, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg', path_insert="super_"):
+    """
 
-        img_path_1 = "{:010d}{}".format(frame_index, img_ext)
-        img_path = os.path.join(dataset_path, folder, "image_0{}".format(side_map[side]), "data", img_path_1)
+    :param dataset_path:
+    :param path:
+    :param superpixel_method:
+    :param superpixel_arguments:
+    :param img_ext:
+    :param path_insert:
+    :return:
+    """
 
-        save_image_path = img_path.replace("image", str(path_insert) + "image")
-        save_image_path = save_image_path.replace("/", "\\")
+    # get image path
+
+    line = path.split()
+    folder = line[0]
+
+    if len(line) == 3:
+        frame_index = int(line[1])
+    else:
+        frame_index = 0
+
+    if len(line) == 3:
+        side = line[2]
+    else:
+        side = None
+
+    side_map = {"2": 2, "3": 3, "l": 2, "r": 3}
+
+    img_path_1 = "{:010d}{}".format(frame_index, img_ext)
+    img_path = os.path.join(dataset_path, folder, "image_0{}".format(side_map[side]), "data", img_path_1)
+
+    save_image_path = img_path.replace("image", str(path_insert) + "image")
+    save_image_path = save_image_path.replace("/", "\\")
+
+    if not os.path.isfile(save_image_path):
         # get folder name of the current image to retrieve saving path
 
         # load image
@@ -106,7 +131,13 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
         Path(save_image_path).parent.mkdir(parents=True, exist_ok=True)
         sup_img.save(save_image_path)
 
-        print("Converted " + str(i+1) + "/" + str(len(paths)) + " images to superpixel.")
+        print("Converted image to superpixel.")
+
+        return True if os.path.isfile(save_image_path) else False
+
+    else:
+        #print("Already calculated")
+        return False
 
 
 def calc_superpixel(img, method="fz", args=[]):
@@ -155,9 +186,6 @@ def calc_superpixel(img, method="fz", args=[]):
 def avg_image(image, label):
 
     avg_image = label2rgb(label, image, kind='avg')
-
-    plt.imshow(avg_image)
-    plt.show()
 
     return avg_image
 
