@@ -70,6 +70,7 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
                                                       img_ext, path_insert)) for path in paths]
 
     pool.close()
+    pool.join()
 
     print("Pool closed. Finished! Converted " + str(results.count(True)) + "/" + str(len(results)) + " succesfully!")
 
