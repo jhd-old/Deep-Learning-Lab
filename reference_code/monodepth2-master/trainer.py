@@ -354,12 +354,12 @@ class Trainer:
 
         for scale in self.opt.scales:
 
-            # disp = outputs[("disp", scale)]
-            normal_vec = outputs[("normal_vec"), scale]
-            K = inputs[("K", scale)]
-            K_inv = inputs[("inv_K", scale)]
-            norm2depth = nd.normal_to_depth(K_inv, [self.opt.height, self.opt.width], normal_vec)
-            disp = nd.depth_to_disp(K, norm2depth)
+            disp = outputs[("disp", scale)]
+            #normal_vec = outputs[("normal_vec"), scale]
+            #K = inputs[("K", scale)]
+            #K_inv = inputs[("inv_K", scale)]
+            #norm2depth = nd.normal_to_depth(K_inv, [self.opt.height, self.opt.width], normal_vec)
+            #disp = nd.depth_to_disp(K, norm2depth)
 
             if self.opt.v1_multiscale:
                 source_scale = scale
