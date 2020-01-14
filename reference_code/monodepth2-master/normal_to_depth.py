@@ -93,7 +93,7 @@ def optimized_loops(K_inv, d_im, normal):
                 pixel = np.array([x, y, 1]).reshape((-1, 1))
 
                 # dot product with 3x3 (k_inv) and 1x3 --> results to 3x1 array
-                pt_3d = np.dot(K_inv, pixel)
+                pt_3d = np.matmul(K_inv, pixel)
 
                 # get the normal values for current size and pixel
                 vec_values = normal[n, :, x, y]
@@ -102,7 +102,7 @@ def optimized_loops(K_inv, d_im, normal):
                 normal_vec = np.array([vec_values[0], vec_values[1], vec_values[2]])
 
                 # calculate final depth (scalar value) for current size and pixel
-                depth[n, x, y] = 1 / np.dot(normal_vec, pt_3d)
+                depth[n, x, y] = 1 / np.matmul(normal_vec, pt_3d)
 
     return depth
 
