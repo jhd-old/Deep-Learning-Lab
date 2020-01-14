@@ -63,19 +63,23 @@ def optimized_loops(K_inv, d_im, normal):
     print(normal[:, 0, 0, 0])
 
     # batch size should be first in normal vector
-    batch_size = normal[:, 0, 0, 0]
+    scale = normal.shape[0]
+    h2 = normal.shape[2]
+    w2 = normal.shape[3]
 
     h = d_im[0]
     w = d_im[1]
 
-    depth = np.zeros(batch_size, h, w)
+    print("shapes: ", h, h2, w, w2)
+
+    depth = np.zeros(scale, h, w)
 
     # K_inv = np.linalg.pinv(K)
 
     # using numba to parallelize following loops.
     # numba needs prange instead of numpy's range
 
-    for n in prange(11, batch_size + 1):
+    for n in prange(11, scale + 1):
         for x in prange(0, h):
             for y in prange(0, w):
                 pixel = [[x], [y], [1]]
