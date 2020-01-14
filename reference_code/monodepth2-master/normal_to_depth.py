@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from numba import jit, prange
 
 
 def normal_to_depth(K_inv, d_im, normal, optimized=True):
@@ -13,38 +14,7 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
     """
 
     if optimized:
-        # use numba package to optimize the following for loops:
-        # https://numba.pydata.org/numba-doc/dev/index.html
-        from numba import jit, prange
-
-        K_inv.float()
-
-        print(normal[11, :, :, :])
-        K_inv = K_inv[0, 0:3, 0:3]
-
-        batch_size = normal[:, 0, 0, 0].size()
-
-        h = d_im[0]
-        w = d_im[1]
-
-        depth = torch.empty(batch_size, h, w)
-        print(depth.size())
-
-        # K_inv = np.linalg.pinv(K)
-
-        # using numba to parallelize following loops.
-        # numba needs prange instead of numpy's range
-
-        @jit(nopython=True, nogil=True, parallel=True)
-        for n in prange(11, batch_size + 1):
-            for x in prange(0, h):
-                for y in prange(0, w):
-                    pixel =[[x], [y], [1]]
-                    pt_3d = K_inv *  pixel
-                    vec_values = normal[n, :, x, y]
-                    normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
-                    depth[n, x, y] = 1 / (normal_vec * pt_3d)
-        print(depth)
+        depth = optimized_loops(K_inv, d_im, normal)
     else:
         # use standard loop
 
@@ -75,6 +45,40 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
         print(depth)
 
     return depth
+
+
+@jit(nopython=True, nogil=True, parallel=True)
+def optimized_loops(K_inv, d_im, normal):
+    # use numba package to optimize the following for loops:
+    # https://numba.pydata.org/numba-doc/dev/index.html
+
+    K_inv.float()
+
+    print(normal[11, :, :, :])
+    K_inv = K_inv[0, 0:3, 0:3]
+
+    batch_size = normal[:, 0, 0, 0].size()
+
+    h = d_im[0]
+    w = d_im[1]
+
+    depth = torch.empty(batch_size, h, w)
+    print(depth.size())
+
+    # K_inv = np.linalg.pinv(K)
+
+    # using numba to parallelize following loops.
+    # numba needs prange instead of numpy's range
+
+    for n in prange(11, batch_size + 1):
+        for x in prange(0, h):
+            for y in prange(0, w):
+                pixel = [[x], [y], [1]]
+                pt_3d = K_inv * pixel
+                vec_values = normal[n, :, x, y]
+                normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
+                depth[n, x, y] = 1 / (normal_vec * pt_3d)
+    print(depth)
 
 
 def depth_to_disp(K, depth):
