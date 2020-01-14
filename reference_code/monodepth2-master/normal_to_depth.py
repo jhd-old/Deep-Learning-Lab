@@ -2,35 +2,88 @@ import numpy as np
 import torch
 
 
-def normal_to_depth(K_inv, d_im, normal):
+def normal_to_depth(K_inv, d_im, normal, optimized=True):
+    """
 
-    K_inv.cuda().float()
-    normal.cuda()
-    print(normal[11, :, :, :])
-    K_inv = K_inv[0, 0:3, 0:3]
+    :param K_inv:
+    :param d_im:
+    :param normal:
+    :param optimized: using numba for loop optimization
+    :return:
+    """
 
-    batch_size = torch.tensor(normal[:, 0, 0, 0].size())
+    if optimized:
+        # use numba package to optimize the following for loops:
+        # https://numba.pydata.org/numba-doc/dev/index.html
+        from numba import jit, prange
 
-    h = torch.tensor(d_im[0])
-    w = torch.tensor(d_im[1])
+        K_inv.float()
 
-    depth = torch.empty(batch_size, h, w).cuda()
-    print(depth.size())
-    #K_inv = np.linalg.pinv(K)
-    for n in range(11, batch_size):
-        for x in range(0, h):
-            for y in range(0, w):
-                pixel = torch.tensor([[x], [y], [1]]).float().cuda()
-                pt_3d = torch.mm(K_inv, pixel).cuda()
-                vec_values = normal[n, :, x, y]
-                normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
-                normal_vec = normal_vec.cuda()
-                depth[n, x, y] = 1/(torch.mm(normal_vec, pt_3d))
-    print(depth)
+        print(normal[11, :, :, :])
+        K_inv = K_inv[0, 0:3, 0:3]
+
+        batch_size = normal[:, 0, 0, 0].size()
+
+        h = d_im[0]
+        w = d_im[1]
+
+        depth = torch.empty(batch_size, h, w)
+        print(depth.size())
+
+        # K_inv = np.linalg.pinv(K)
+
+        # using numba to parallelize following loops.
+        # numba needs prange instead of numpy's range
+
+        @jit(nopython=True, nogil=True, parallel=True)
+        for n in prange(11, batch_size + 1):
+            for x in prange(0, h):
+                for y in prange(0, w):
+                    pixel =[[x], [y], [1]]
+                    pt_3d = K_inv *  pixel
+                    vec_values = normal[n, :, x, y]
+                    normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
+                    depth[n, x, y] = 1 / (normal_vec * pt_3d)
+        print(depth)
+    else:
+        # use standard loop
+
+        K_inv.cuda().float()
+        normal.cuda()
+        print(normal[11, :, :, :])
+        K_inv = K_inv[0, 0:3, 0:3]
+
+        batch_size = normal[:, 0, 0, 0].size()
+
+        h = d_im[0]
+        w = d_im[1]
+
+        depth = torch.empty(batch_size, h, w).cuda()
+        print(depth.size())
+        # K_inv = np.linalg.pinv(K)
+
+        for n in range(11, batch_size + 1):
+            for x in range(0, h):
+                for y in range(0, w):
+                    pixel = torch.tensor([[x], [y], [1]]).float().cuda()
+                    pt_3d = torch.mm(K_inv, pixel).cuda()
+                    vec_values = normal[n, :, x, y]
+                    normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
+                    normal_vec = normal_vec.cuda()
+                    one = torch.ones(1)
+                    depth[n, x, y] = one / (torch.mm(normal_vec, pt_3d)).cuda()
+        print(depth)
 
     return depth
 
+
 def depth_to_disp(K, depth):
+    """
+
+    :param K:
+    :param depth:
+    :return:
+    """
 
     batch, h, w = depth.size()
     disp = torch.empty(batch, h, w).cuda()
