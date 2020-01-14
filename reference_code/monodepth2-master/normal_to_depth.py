@@ -5,20 +5,21 @@ from numba import jit, prange
 
 def normal_to_depth(K_inv, d_im, normal, optimized=True):
     """
+    Converts normal vectors to depth.
 
-    :param K_inv:
-    :param d_im:
-    :param normal:
-    :param optimized: using numba for loop optimization
-    :return:
+    :param K_inv: inverted intrinsic matrix (Torch tensor)
+    :param d_im: image dimensions (list(height, width))
+    :param normal: normals vector (Torch tensor)
+    :param optimized: using numba package for loop optimization
+    :return: depth matrix
+    :rtype: Torch tensor
     """
 
     if optimized:
-
+        # use numba optimization
         # first convert all tensors to numpy
         K_inv = K_inv.cpu().detach().numpy()
         normal = normal.cpu().detach().numpy()
-        d_im = d_im.cpu().detach().numpy()
 
         depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
     else:
