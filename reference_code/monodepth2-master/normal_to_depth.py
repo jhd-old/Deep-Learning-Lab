@@ -91,7 +91,7 @@ def optimized_loops(K_inv, d_im, normal):
     for n in prange(11, scale + 1):
         for x in prange(0, h):
             for y in prange(0, w):
-                pixel = [[x], [y], [1]]
+                pixel = np.array([x, y, 1])
                 pt_3d = K_inv * pixel
                 vec_values = normal[n, :, x, y]
                 normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
