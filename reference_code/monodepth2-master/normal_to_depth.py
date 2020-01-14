@@ -27,19 +27,19 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
 
         K_inv.cuda().float()
         normal.cuda()
-        print(normal[11, :, :, :])
+        #print(normal[11, :, :, :])
         K_inv = K_inv[0, 0:3, 0:3]
 
-        batch_size = normal[:, 0, 0, 0].size()
+        scale = normal.shape[0]
 
         h = d_im[0]
         w = d_im[1]
 
-        depth = torch.empty(batch_size, h, w).cuda()
-        print(depth.size())
+        depth = torch.empty(scale, h, w).cuda()
+        #print(depth.size())
         # K_inv = np.linalg.pinv(K)
 
-        for n in range(11, batch_size + 1):
+        for n in range(11, scale + 1):
             for x in range(0, h):
                 for y in range(0, w):
                     pixel = torch.tensor([x, y, 1]).float().cuda()
@@ -48,7 +48,7 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
                     normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
                     normal_vec = normal_vec.cuda()
                     depth[n, x, y] = float(1) / (torch.dot(normal_vec, pt_3d).to(dtype=torch.float).item())
-        print(depth)
+        #print(depth)
 
     return depth
 
