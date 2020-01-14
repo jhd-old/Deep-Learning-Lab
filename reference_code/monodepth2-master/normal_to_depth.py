@@ -14,6 +14,12 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
     """
 
     if optimized:
+
+        # first convert all tensors to numpy
+        K_inv = K_inv.numpy()
+        normal = normal.numpy()
+        d_im = d_im.numpy()
+
         depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
     else:
         # use standard loop
@@ -52,8 +58,6 @@ def optimized_loops(K_inv, d_im, normal):
     # use numba package to optimize the following for loops:
     # https://numba.pydata.org/numba-doc/dev/index.html
 
-    K_inv.numpy()
-    normal = normal.numpy()
     K_inv = K_inv[0, 0:3, 0:3]
 
     batch_size = normal[:, 0, 0, 0].size()
