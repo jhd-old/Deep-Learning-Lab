@@ -72,7 +72,7 @@ def optimized_loops(K_inv, d_im, normal):
 
     print("shapes: ", h, h2, w, w2)
 
-    depth = np.zeros((scale, h, w), dtype=np.float)
+    depth = np.zeros(shape=(scale, h, w), dtype=np.float)
 
     # K_inv = np.linalg.pinv(K)
 
