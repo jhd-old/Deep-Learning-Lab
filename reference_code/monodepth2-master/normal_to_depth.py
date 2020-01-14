@@ -59,14 +59,16 @@ def optimized_loops(K_inv, d_im, normal):
     # use numba package to optimize the following for loops:
     # https://numba.pydata.org/numba-doc/dev/index.html
 
-    K_inv = K_inv[0, 0:3, 0:3]
+    K_inv = K_inv[0, 0:3, 0:3].shape[0]
+    print(normal[:, 0, 0, 0])
 
-    batch_size = normal[:, 0, 0, 0].size()
+    # batch size should be first in normal vector
+    batch_size = normal[:, 0, 0, 0]
 
     h = d_im[0]
     w = d_im[1]
 
-    depth = torch.empty(batch_size, h, w)
+    depth = np.zeros(batch_size, h, w)
 
     # K_inv = np.linalg.pinv(K)
 
