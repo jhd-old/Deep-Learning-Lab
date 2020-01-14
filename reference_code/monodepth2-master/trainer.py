@@ -255,13 +255,17 @@ class Trainer:
             features = self.models["encoder"](inputs["color_aug", 0, 0])
             outputs = self.models["depth"](features)
 
+
+        
         if self.opt.predictive_mask:
             outputs["predictive_mask"] = self.models["predictive_mask"](features)
 
         if self.use_pose_net:
             outputs.update(self.predict_poses(inputs, features))
 
-        self.generate_images_pred(inputs, outputs)
+        # changed method to Transform Normal "outputs" to former disparity outputs and return new outputs 
+        outputs = self.generate_images_pred(inputs, outputs)
+        
         losses = self.compute_losses(inputs, outputs)
 
         return outputs, losses
@@ -354,12 +358,20 @@ class Trainer:
 
         for scale in self.opt.scales:
 
-            disp = outputs[("disp", scale)]
-            #normal_vec = outputs[("normal_vec"), scale]
-            #K = inputs[("K", scale)]
-            #K_inv = inputs[("inv_K", scale)]
-            #norm2depth = nd.normal_to_depth(K_inv, [self.opt.height, self.opt.width], normal_vec)
-            #disp = nd.depth_to_disp(K, norm2depth)
+            #check which type of decoder is used 
+            if self.opt.decoder == "normal_vector":
+                # tranform normals to depth to disp
+                normal_vec = outputs[("normal_vec"), scale]
+                K = inputs[("K", scale)]
+                K_inv = inputs[("inv_K", scale)]
+                depth = nd.normal_to_depth(K_inv, [self.opt.height, self.opt.width], normal_vec)
+                disp = nd.depth_to_disp(K, depth)
+                # add disparity entry in dictionary
+                outputs[("disp", scale)] = disp
+
+            else:
+                disp = outputs[("disp", scale)]
+
 
             if self.opt.v1_multiscale:
                 source_scale = scale
@@ -367,8 +379,9 @@ class Trainer:
                 disp = F.interpolate(
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
                 source_scale = 0
-
-            _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
+            # added if-statement to prevent overhead (depth would be calculated 2times)
+            if not self.opt.decoder == "normal_vector":
+                _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
 
             outputs[("depth", 0, scale)] = depth
 
@@ -406,6 +419,8 @@ class Trainer:
                 if not self.opt.disable_automasking:
                     outputs[("color_identity", frame_id, scale)] = \
                         inputs[("color", frame_id, source_scale)]
+        #added return
+        return outputs
 
     def compute_reprojection_loss(self, pred, target):
         """Computes reprojection loss between a batch of predicted and target images
