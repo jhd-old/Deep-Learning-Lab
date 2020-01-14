@@ -3,7 +3,7 @@ import torch
 from numba import jit, prange
 
 
-def normal_to_depth(K_inv, d_im, normal, optimized=True):
+def normal_to_depth(K_inv, d_im, normal, optimized=False):
     """
     Converts normal vectors to depth.
 
@@ -42,13 +42,12 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
         for n in range(11, batch_size + 1):
             for x in range(0, h):
                 for y in range(0, w):
-                    pixel = torch.tensor([[x], [y], [1]]).float().cuda()
+                    pixel = torch.tensor([x, y, 1]).float().cuda()
                     pt_3d = torch.mm(K_inv, pixel).cuda()
                     vec_values = normal[n, :, x, y]
                     normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
                     normal_vec = normal_vec.cuda()
-                    one = torch.ones(1)
-                    depth[n, x, y] = one / (torch.mm(normal_vec, pt_3d)).cuda()
+                    depth[n, x, y] = float(1) / (torch.dot(normal_vec, pt_3d).to(dtype=torch.float).item())
         print(depth)
 
     return depth
@@ -102,7 +101,7 @@ def optimized_loops(K_inv, d_im, normal):
                 normal_vec = np.array([vec_values[0], vec_values[1], vec_values[2]])
 
                 # calculate final depth (scalar value) for current size and pixel
-                depth[n, x, y] = 1 / (normal_vec * pt_3d)
+                depth[n, x, y] = 1 / np.dot(normal_vec, pt_3d)
 
     return depth
 
