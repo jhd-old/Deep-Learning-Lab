@@ -14,7 +14,7 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
     """
 
     if optimized:
-        depth = optimized_loops(K_inv, d_im, normal)
+        depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
     else:
         # use standard loop
 
@@ -52,8 +52,8 @@ def optimized_loops(K_inv, d_im, normal):
     # use numba package to optimize the following for loops:
     # https://numba.pydata.org/numba-doc/dev/index.html
 
-    K_inv.from_numpy()
-    normal = normal.from_numpy()
+    K_inv.numpy()
+    normal = normal.numpy()
     K_inv = K_inv[0, 0:3, 0:3]
 
     batch_size = normal[:, 0, 0, 0].size()
@@ -76,6 +76,8 @@ def optimized_loops(K_inv, d_im, normal):
                 vec_values = normal[n, :, x, y]
                 normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
                 depth[n, x, y] = 1 / (normal_vec * pt_3d)
+
+    return depth
 
 
 def depth_to_disp(K, depth):
