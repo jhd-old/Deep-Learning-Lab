@@ -69,7 +69,6 @@ def optimized_loops(K_inv, d_im, normal):
     # https://numba.pydata.org/numba-doc/dev/index.html
 
     K_inv = K_inv[0, 0:3, 0:3]
-    print(normal[:, 0, 0, 0])
 
     # batch size should be first in normal vector
     scale = normal.shape[0]
@@ -78,8 +77,6 @@ def optimized_loops(K_inv, d_im, normal):
 
     h = d_im[0]
     w = d_im[1]
-
-    print("shapes: ", h, h2, w, w2)
 
     depth = np.zeros((scale, h, w))
 
@@ -91,11 +88,21 @@ def optimized_loops(K_inv, d_im, normal):
     for n in prange(11, scale + 1):
         for x in prange(0, h):
             for y in prange(0, w):
-                pixel = np.array([x, y, 1])
-                pt_3d = K_inv * pixel
+
+                # pixel values need to be transposed
+                pixel = np.array([x, y, 1]).reshape((-1, 1))
+
+                # dot product with 3x3 (k_inv) and 1x3 --> results to 3x1 array
+                pt_3d = np.dot(K_inv, pixel)
+
+                # get the normal values for current size and pixel
                 vec_values = normal[n, :, x, y]
+
+                # create 1x3 array for the current normal vector (x , y, z)
                 normal_vec = np.array([vec_values[0], vec_values[1], vec_values[2]])
-                depth[n, x, y] = 1 / (normal_vec * pt_3d)
+
+                # calculate final depth (scalar value) for current size and pixel
+                depth[n, x, y] = 1 / np.dot(normal_vec, pt_3d)
 
     return depth
 
