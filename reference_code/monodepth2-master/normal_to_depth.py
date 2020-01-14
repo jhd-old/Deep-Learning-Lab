@@ -94,7 +94,7 @@ def optimized_loops(K_inv, d_im, normal):
                 pixel = np.array([x, y, 1])
                 pt_3d = K_inv * pixel
                 vec_values = normal[n, :, x, y]
-                normal_vec = [vec_values[0], vec_values[1], vec_values[2]]
+                normal_vec = np.array([vec_values[0], vec_values[1], vec_values[2]])
                 depth[n, x, y] = 1 / (normal_vec * pt_3d)
 
     return depth
