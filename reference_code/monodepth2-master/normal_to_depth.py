@@ -39,14 +39,23 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
         #print(depth.size())
         # K_inv = np.linalg.pinv(K)
 
-        for n in range(11, scale + 1):
-            for x in range(0, h):
-                for y in range(0, w):
-                    pixel = torch.tensor([x, y, 1]).float().view(1, 3).cuda()
+        for n in range(scale):
+            for x in range(h):
+                for y in range(w):
+                    pixel = torch.tensor([x, y, 1]).float().view(3, 1).cuda()
+
+                    # matrix multiplication with 3x3 (k_inv) and 3x1 --> results to 3x1 array
                     pt_3d = torch.mm(K_inv, pixel).cuda()
+
+                    # get the normal values for current size and pixel
                     vec_values = normal[n, :, x, y]
-                    normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]])
+
+                    # create 1x3 array for the current normal vector (x , y, z)
+                    normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
                     normal_vec = normal_vec.cuda()
+
+                    # calculate final depth (scalar value) for current size and pixel
+                    # do matrix multiplication of 1x3 * 3x1 --> results in 1x1
                     depth[n, x, y] = float(1) / (torch.mm(normal_vec, pt_3d).to(dtype=torch.float).item())
         #print(depth)
 
