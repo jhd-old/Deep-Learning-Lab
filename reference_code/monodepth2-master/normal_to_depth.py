@@ -85,15 +85,15 @@ def optimized_loops(K_inv, d_im, normal):
     # using numba to parallelize following loops.
     # numba needs prange instead of numpy's range
 
-    for n in prange(11, scale + 1):
-        for x in prange(0, h):
-            for y in prange(0, w):
+    for n in prange(scale):
+        for x in prange(h):
+            for y in prange(w):
 
                 # pixel values need to be transposed
                 pixel = np.array([x, y, 1]).reshape((-1, 1))
 
                 # dot product with 3x3 (k_inv) and 1x3 --> results to 3x1 array
-                pt_3d = np.matmul(K_inv, pixel)
+                pt_3d = K_inv * pixel
 
                 # get the normal values for current size and pixel
                 vec_values = normal[n, :, x, y]
@@ -102,7 +102,7 @@ def optimized_loops(K_inv, d_im, normal):
                 normal_vec = np.array([vec_values[0], vec_values[1], vec_values[2]])
 
                 # calculate final depth (scalar value) for current size and pixel
-                depth[n, x, y] = 1 / np.matmul(normal_vec, pt_3d)
+                depth[n, x, y] = 1 / (normal_vec * pt_3d)
 
     return depth
 
