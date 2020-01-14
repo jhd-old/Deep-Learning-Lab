@@ -56,10 +56,19 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
 
 @jit(nopython=True, nogil=True, parallel=True)
 def optimized_loops(K_inv, d_im, normal):
+    """
+    running normal to depth conversion in optimized loops.
+
+    :param K_inv: inverted intrinsic matrix (Torch tensor)
+    :param d_im: image dimensions (list(height, width))
+    :param normal: normals vector (Torch tensor)
+    :return: depth matrix
+    :rtype: numpy nd-array
+    """
     # use numba package to optimize the following for loops:
     # https://numba.pydata.org/numba-doc/dev/index.html
 
-    K_inv = K_inv[0, 0:3, 0:3].shape[0]
+    K_inv = K_inv[0, 0:3, 0:3]
     print(normal[:, 0, 0, 0])
 
     # batch size should be first in normal vector
