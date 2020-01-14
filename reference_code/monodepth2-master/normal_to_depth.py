@@ -16,9 +16,9 @@ def normal_to_depth(K_inv, d_im, normal, optimized=True):
     if optimized:
 
         # first convert all tensors to numpy
-        K_inv = K_inv.numpy()
-        normal = normal.numpy()
-        d_im = d_im.numpy()
+        K_inv = K_inv.cpu().detach().numpy()
+        normal = normal.cpu().detach().numpy()
+        d_im = d_im.cpu().detach().numpy()
 
         depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
     else:
