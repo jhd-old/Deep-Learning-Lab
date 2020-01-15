@@ -35,8 +35,8 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
         h = d_im[0]
         w = d_im[1]
 
-        depth = torch.empty(scale, h, w).cuda()
-        #print(depth.size())
+        # we will need following shape: [batchsize, channel, h, w]
+        depth = torch.empty(scale, 1, h, w).cuda()
         # K_inv = np.linalg.pinv(K)
 
         for n in range(scale):
@@ -56,8 +56,7 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
 
                     # calculate final depth (scalar value) for current size and pixel
                     # do matrix multiplication of 1x3 * 3x1 --> results in 1x1
-                    depth[n, x, y] = float(1) / (torch.mm(normal_vec, pt_3d).to(dtype=torch.float).item())
-        #print(depth)
+                    depth[n, 0, x, y] = float(1) / (torch.mm(normal_vec, pt_3d).to(dtype=torch.float).item())
 
     return depth
 
@@ -123,13 +122,22 @@ def depth_to_disp(K, depth):
     :return:
     """
 
-    batch, h, w = depth.size()
-    disp = torch.empty(batch, h, w).cuda()
+    # get batch size, height and width
+    batch, channel, h, w = depth.size()
+
+    # init an empty 4D tensor and put it onto gpu
+    disp = torch.empty(batch, 1, h, w).cuda()
+
+    # intrinsic matrix reduced to 3x3
     K = K[0, 0:3, 0:3]
+
+    # calculate focal length
     focallength = K[1, 1] * w
+
+    # distance between stereo cameras. Taken from kitti dataset.
     baseline = 0.54
+
     for n in range(0, batch):
-        disp[n, :, :] = (baseline*focallength) / (depth[n, :, :] + 1e-8)
-    print(disp[11, :, :])
+        disp[n, 0, :, :] = (baseline * focallength) / (depth[n, 0, :, :] + 1e-8)
 
     return disp

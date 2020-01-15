@@ -26,7 +26,7 @@ import networks
 from IPython import embed
 
 import normal_to_depth as nd
-
+#import normal2disp as nd
 
 class Trainer:
     def __init__(self, options):
@@ -366,7 +366,9 @@ class Trainer:
                 K = inputs[("K", scale)]
                 K_inv = inputs[("inv_K", scale)]
                 depth = nd.normal_to_depth(K_inv, [self.opt.height, self.opt.width], normal_vec)
+                print("new depth tensor shape", depth.shape)
                 disp = nd.depth_to_disp(K, depth)
+                print("disp shape ", disp.shape)
                 # add disparity entry in dictionary
                 outputs[("disp", scale)] = disp
 
