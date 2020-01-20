@@ -40,8 +40,8 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
         # K_inv = np.linalg.pinv(K)
 
         for n in range(scale):
-            for x in range(h):
-                for y in range(w):
+            for x in range(w):
+                for y in range(h):
                     pixel = torch.tensor([x, y, 1]).float().view(3, 1).cuda()
 
                     # matrix multiplication with 3x3 (k_inv) and 3x1 --> results to 3x1 array
