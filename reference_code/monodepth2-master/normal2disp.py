@@ -3,21 +3,22 @@ import torch
 from torch import nn
 
 
-def normal_to_depth(inv_K, d_im, normal):
+def normal_to_depth(inv_K, normal):
     """
+    Converts normal vectors to depth.
 
-    :param inv_K:
-    :param d_im:
-    :param normal:
-    :return:
+    :param K_inv: inverted intrinsic matrix (Torch tensor)
+    :param normal: normals vector (Torch tensor)
+    :return: depth matrix
+    :rtype: Torch tensor
     :todo: continue implementing and change to use this method in trainer.py
     """
 
     batch_size = normal.shape[0]
-    h = d_im[0]
-    w = d_im[1]
+    h = normal.shape[2]
+    w = normal.shape[3]
 
-    inv_K = inv_K.cuda().float()[0, 0:3, 0:3]
+    inv_K = inv_K[0, 0:3, 0:3].cuda().float()
 
     # init meshgrid for image height and width
     meshgrid = np.meshgrid(range(w), range(h), indexing='xy')
@@ -47,13 +48,60 @@ def normal_to_depth(inv_K, d_im, normal):
                                    requires_grad=False)
 
     # matrix multiplication with 3x3 (k_inv) and
-    cam_points = torch.matmul(inv_K, pix_coords) #entspricht K^1*pixel
+    cam_points = torch.matmul(inv_K, pix_coords).cuda() # entspricht K^1*pixel
+
+    # convert numpy nd-array to a torch parameter (~tensor)
+    normal_vec = nn.Parameter(normal,
+                             requires_grad=False).cuda().float()
+
+    # get batch size
+    batch = normal_vec.shape[0]
+
+    # do some magic
+    normal_vectors = torch.stack([normal_vec[:, 0].view(batch, -1), normal_vec[:, 1].view(batch, -1),
+                                  normal_vec[:, 2].view(batch, -1)], dim=1)
+
+    # do dot product by multiplication of both matrices (x_r=x*x', y_r=y*y', z_r=z*z') and sum (d=x_r+y_r+z_r)
+    depth = (normal_vectors * cam_points).sum(1)
+
+    # depth = 1 / values
+    # matrix**(-1) should solve this
+    depth = depth.pow(-1)
+
+    # add dimension one to change (batch size, h*w) to (batch size, 1, h*w)
+    depth = torch.unsqueeze(depth, dim=1)
+
+    # unstack to retrieve one depth matrix per batch (batch size, 1, h, w)
+    depth = depth.view(batch_size, 1, h, w)
+
+    return depth
 
 
-    # depth = 1/(normal_vec)T * cam_points
+def depth_to_disp(K, depth):
+    """
+    Converts depth to disparity.
 
-    return cam_points
+    :param K: intrinsic matrix
+    :param depth: depth matrix (batch size, 1, h, w)
+    :return:
+    """
 
-def normal_to_dips(depth):
+    # get batch size, height and width
+    batch, channel, h, w = depth.shape
+
+    # init an empty 4D tensor and put it onto gpu
+    disp = torch.empty(batch, 1, h, w).cuda()
+
+    # intrinsic matrix reduced to 3x3
+    K = K[0, 0:3, 0:3].cuda().float()
+
+    # calculate focal length
+    focal_length = K[1, 1] * w
+
+    # distance between stereo cameras. Taken from kitti dataset.
+    baseline = 0.54
+
+    for n in range(0, batch):
+        disp[n, 0, :, :] = (baseline * focal_length) / (depth[n, 0, :, :] + 1e-8)
 
     return disp
