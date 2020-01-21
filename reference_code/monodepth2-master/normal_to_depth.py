@@ -3,7 +3,7 @@ import torch
 from numba import jit, prange
 
 
-def normal_to_depth(K_inv, d_im, normal, optimized=False):
+def normal_to_depth(K_inv, normal, optimized=False):
     """
     Converts normal vectors to depth.
 
@@ -21,7 +21,8 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
         K_inv = K_inv.cpu().detach().numpy()
         normal = normal.cpu().detach().numpy()
 
-        depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
+        # depth = torch.from_numpy(optimized_loops(K_inv, d_im, normal))
+        depth = torch.from_numpy(optimized_loops(K_inv, normal))
     else:
         # use standard loop
 
@@ -32,9 +33,11 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
 
         scale = normal.shape[0]
 
-        h = d_im[0]
-        w = d_im[1]
-
+        # h = d_im[0]
+        # w = d_im[1]
+        h = normal.shape[2]
+        w = normal.shape[3]
+        print('w = ', w, 'h = ', h, 'scale = ', scale)
         # we will need following shape: [batchsize, channel, h, w]
         depth = torch.empty(scale, 1, h, w).cuda()
         # K_inv = np.linalg.pinv(K)
@@ -48,7 +51,8 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
                     pt_3d = torch.mm(K_inv, pixel).cuda()
 
                     # get the normal values for current size and pixel
-                    vec_values = normal[n, :, x, y]
+                    vec_values = normal[n, :, y, x]
+                    #print('x = ', x, 'y = ', y)
 
                     # create 1x3 array for the current normal vector (x , y, z)
                     normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
@@ -56,7 +60,7 @@ def normal_to_depth(K_inv, d_im, normal, optimized=False):
 
                     # calculate final depth (scalar value) for current size and pixel
                     # do matrix multiplication of 1x3 * 3x1 --> results in 1x1
-                    depth[n, 0, x, y] = float(1) / (torch.mm(normal_vec, pt_3d).to(dtype=torch.float).item())
+                    depth[n, 0, y, x] = float(1) / (torch.mm(normal_vec, pt_3d).to(dtype=torch.float).item())
 
     return depth
 
