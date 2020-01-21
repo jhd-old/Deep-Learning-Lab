@@ -376,6 +376,9 @@ class Trainer:
 
                 # add disparity entry in dictionary
                 outputs[("disp", scale)] = disp
+                disp = outputs[("disp", scale)]
+                # outputs[("depth", 0, scale)] = depth
+                # source_scale = scale
 
             else:
                 disp = outputs[("disp", scale)]
@@ -384,12 +387,13 @@ class Trainer:
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
-                disp = F.interpolate(
+                 disp = F.interpolate(
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                source_scale = 0
+                 source_scale = 0
             # added if-statement to prevent overhead (depth would be calculated 2times)
-            if not self.opt.decoder == "normal_vector":
-                _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
+            # if not self.opt.decoder == "normal_vector":
+
+            _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
 
             outputs[("depth", 0, scale)] = depth
 
