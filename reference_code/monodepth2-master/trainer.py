@@ -51,8 +51,12 @@ class Trainer:
         if self.opt.use_stereo:
             self.opt.frame_ids.append("s")
 
-        self.models["encoder"] = networks.ResnetEncoder(
-            self.opt.num_layers, self.opt.weights_init == "pretrained")
+        if self.opt.dataset == "kitti_superpixel":
+            # TODO: add new four channel encoder here
+        else:
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained")
+
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
@@ -137,10 +141,6 @@ class Trainer:
 
             print("Finished converting all images to superpixel.")
 
-            # load superpixel data
-            print("Loading superpixel data")
-            train_superpixel_filenames = train_filenames.replace(img_ext, '.npy')
-            val_superpixel_filenames = val_filenames.replace(img_ext, '.npy')
 
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
@@ -266,7 +266,18 @@ class Trainer:
             outputs = self.models["depth"](features[0])
         else:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
-            features = self.models["encoder"](inputs["color_aug", 0, 0])
+
+            if self.opt.dataset == "kitti_superpixel":
+
+                # concat superpixel to the image
+                image = inputs["color_aug", 0, 0]
+                superpixel = inputs["super", 0, 0]
+                four_chan = torch.cat((image, superpixel), dim=0)
+
+                features = self.models["encoder"](four_chan)
+            else:
+                features = self.models["encoder"](inputs["color_aug", 0, 0])
+
             outputs = self.models["depth"](features)
 
         if self.opt.predictive_mask:

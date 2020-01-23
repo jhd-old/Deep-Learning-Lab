@@ -87,13 +87,21 @@ class SuperpixelDataset(KITTIDataset):
     def __init__(self, *args, **kwargs):
         super(SuperpixelDataset, self).__init__(*args, **kwargs)
 
-
-
     def get_image_path(self, folder, frame_index, side):
         f_str = "{:010d}{}".format(frame_index, self.img_ext)
         image_path = os.path.join(
             self.data_path, folder, "super_image_0{}/data".format(self.side_map[side]), f_str)
         return image_path
+
+    def get_superpixel(self, folder, frame_index, side, do_flip):
+
+        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
+        superpixel = np.load(path)
+
+        if do_flip:
+            superpixel = np.fliplr(superpixel)
+
+        return superpixel
 
     def get_depth(self, folder, frame_index, side, do_flip):
         calib_path = os.path.join(self.data_path, folder.split("/")[0])
