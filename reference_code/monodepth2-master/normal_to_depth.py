@@ -25,10 +25,9 @@ def normal_to_depth(K_inv, normal, optimized=False):
         depth = torch.from_numpy(optimized_loops(K_inv, normal))
     else:
         # use standard loop
-
         K_inv.cuda().float()
         normal.cuda()
-        #print(normal[11, :, :, :])
+        # print(normal[11, :, :, :])
         K_inv = K_inv[0, 0:3, 0:3]
 
         scale = normal.shape[0]
