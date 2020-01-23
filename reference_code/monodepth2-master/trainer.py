@@ -52,7 +52,9 @@ class Trainer:
             self.opt.frame_ids.append("s")
 
         if self.opt.dataset == "kitti_superpixel":
-            # TODO: add new four channel encoder here
+            # use a four channel resnet encoder
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained", num_channels=4)
         else:
             self.models["encoder"] = networks.ResnetEncoder(
                 self.opt.num_layers, self.opt.weights_init == "pretrained")
@@ -268,7 +270,7 @@ class Trainer:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
 
             if self.opt.dataset == "kitti_superpixel":
-
+                # use four channel encoder
                 # concat superpixel to the image
                 image = inputs["color_aug", 0, 0]
                 superpixel = inputs["super", 0, 0]
@@ -276,6 +278,7 @@ class Trainer:
 
                 features = self.models["encoder"](four_chan)
             else:
+                # use standard 3 channel
                 features = self.models["encoder"](inputs["color_aug", 0, 0])
 
             outputs = self.models["depth"](features)
