@@ -87,7 +87,12 @@ def evaluate(opt):
                                 pin_memory=True, drop_last=False)
 
         encoder = networks.ResnetEncoder(opt.num_layers, False)
-        depth_decoder = networks.DepthDecoder(encoder.num_ch_enc)
+
+        # if the surface normal are used we have to select the NormalDecoder instead of the Depth Decoder.
+        if opt.decoder == "normal_vector":
+            depth_decoder = networks.NormalDecoder(encoder.num_ch_enc)
+        else:
+            depth_decoder = networks.DepthDecoder(encoder.num_ch_enc)
 
         model_dict = encoder.state_dict()
         encoder.load_state_dict({k: v for k, v in encoder_dict.items() if k in model_dict})
