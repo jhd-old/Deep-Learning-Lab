@@ -13,45 +13,45 @@ from pathlib import Path
 import multiprocessing as mp
 
 
-
-def save_superpixel_in_archive(file, data, compressed=True):
+def save_superpixel_in_archive(file_path, data, compressed=True):
     """
     Save superpixel information in a numpy archive
 
-    :param file: path to save to
+    :param file_path: path to save to
     :param data: data to save. List of numpy arrays
     :param compressed: compression on off
     """
 
     if compressed:
-        np.savez_compressed(file, data)
+        np.savez_compressed(file_path, data)
 
     else:
-        np.savez(file, data)
+        np.savez(file_path, data)
 
 
-def load_superpixel_from_archive(file):
+def load_superpixel_from_archive(file_path):
     """
     loads superpixel data from an numpy archive
 
-    :param file: file to load
+    :param file_path: file to load
     :return: list of superpixel data
     """
 
-    archive = np.load(file)
+    archive = np.load(file_path)
     data = []
 
     if isinstance(archive, np.lib.io.NpzFile):
 
-        for file in archive.files:
-            data.append(file)
+        for file_path in archive.files:
+            data.append(file_path)
     else:
         raise TypeError("Wrong data type!")
 
     return data
 
 
-def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg', path_insert="super_"):
+def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=[],
+                              img_ext='.jpg', path_insert="super_", save_to_same_folder=True):
     """
 
     :param path_to_raw_data:
@@ -66,8 +66,8 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
     print("Starting multiprocessing pool on " + str(mp.cpu_count()) + " kernels.")
 
-    results = [pool.apply(convert_func, args=(dataset_path, path, superpixel_method, superpixel_arguments,
-                                                      img_ext, path_insert)) for path in paths]
+    results = [pool.apply(convert_func, args=(dataset_path, path, superpixel_method, superpixel_arguments, img_ext,
+                                              path_insert, save_to_same_folder)) for path in paths]
 
     pool.close()
     pool.join()
@@ -75,20 +75,11 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     print("Pool closed. Finished! Converted " + str(results.count(True)) + "/" + str(len(results)) + " succesfully!")
 
 
-def convert_func(dataset_path, path, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg', path_insert="super_"):
-    """
-
-    :param dataset_path:
-    :param path:
-    :param superpixel_method:
-    :param superpixel_arguments:
-    :param img_ext:
-    :param path_insert:
-    :return:
-    """
+def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
+                 path_insert="super_", save_to_same_folder=True):
 
     # get image path
-
+    # if none, converts all images in dataset
     line = path.split()
     folder = line[0]
 
@@ -107,10 +98,18 @@ def convert_func(dataset_path, path, superpixel_method=None, superpixel_argument
     img_path_1 = "{:010d}{}".format(frame_index, img_ext)
     img_path = os.path.join(dataset_path, folder, "image_0{}".format(side_map[side]), "data", img_path_1)
 
-    save_image_path = img_path.replace("image", str(path_insert) + "image")
-    save_image_path = save_image_path.replace("/", "\\")
+    # change path to new folder
+    if not save_to_same_folder:
+        save_sup_path = img_path.replace("image", str(path_insert) + "image")
+    else:
+        save_sup_path = img_path
 
-    if not os.path.isfile(save_image_path):
+    # change file type to none, numpy will add .npy automatically
+    save_sup_path = save_sup_path.replace(img_ext, "")
+    save_sup_path = save_sup_path.replace("/", "\\")
+
+    # check if already converted
+    if not os.path.isfile(save_sup_path):
         # get folder name of the current image to retrieve saving path
 
         # load image
@@ -122,27 +121,22 @@ def convert_func(dataset_path, path, superpixel_method=None, superpixel_argument
         # calculate superpixel
         sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
 
-        # convert image to superpixel image
-        sup_img = avg_image(img, sup)
-
-        # convert numpy img back to PIL Image
-        sup_img = Image.fromarray(sup_img)
-
         # create directory to be save
-        Path(save_image_path).parent.mkdir(parents=True, exist_ok=True)
-        sup_img.save(save_image_path)
+        Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
 
+        # save superpixel in numpy archive
+        np.save(save_sup_path, sup)
         print("Converted image to superpixel.")
 
-        return True if os.path.isfile(save_image_path) else False
+        return True if os.path.isfile(save_sup_path) else False
 
     else:
-        #print("Already calculated")
         return False
 
 
 def calc_superpixel(img, method="fz", args=[]):
     """
+    Calculates superpixels from given image.
 
     :param img:
     :param method:
@@ -184,32 +178,20 @@ def calc_superpixel(img, method="fz", args=[]):
 
     return sup
 
+
 def avg_image(image, label):
+    """
+    Average an image for each given superpixel area.
+
+    :param image: image to average
+    :param label: superpixel labels
+    :return: averaged image
+    :rtype: numpy nd-array
+    """
 
     avg_image = label2rgb(label, image, kind='avg')
 
     return avg_image
-
-def mean_image(image, label):
-
-    sli_1d = np.reshape(label, -1)
-    uni = np.unique(sli_1d)
-
-    num_ch = image.shape[2]
-
-    for channel in range(num_ch):
-        img_chan = image[:, :, channel]
-
-        for i in uni:
-            ma = np.ma.masked_where(label != i, img_chan)
-            val = np.mean(ma)
-
-            img_chan[ma] = val
-
-        image[:, :, channel] = img_chan
-
-
-    return image
 
 
 class KittiCamera(IntEnum):
@@ -221,3 +203,12 @@ class KittiCamera(IntEnum):
     gray_right = 1
     color_left = 2
     color_right = 3
+
+
+if __name__ == "__main__":
+
+    data_set = ""
+    method = "fz"
+
+    convert_rgb_to_superpixel()
+

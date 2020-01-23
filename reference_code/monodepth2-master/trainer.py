@@ -127,10 +127,20 @@ class Trainer:
 
         # Check if superpixel dataset is used and create superpixel image
         if "superpixel" in self.opt.dataset:
+            print("Start converting training images to superpixel.")
             superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
                                                        self.opt.superpixel_arguments, img_ext=img_ext)
-            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, val_filenames, self.opt.superpixel_method,
+
+            print("Start converting validation images to superpixel.")
+            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
                                                        self.opt.superpixel_arguments, img_ext=img_ext)
+
+            print("Finished converting all images to superpixel.")
+
+            # load superpixel data
+            print("Loading superpixel data")
+            train_superpixel_filenames = train_filenames.replace(img_ext, '.npy')
+            val_superpixel_filenames = val_filenames.replace(img_ext, '.npy')
 
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
