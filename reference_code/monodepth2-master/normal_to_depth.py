@@ -2,6 +2,10 @@ import numpy as np
 import torch
 from numba import jit, prange
 
+######################################################################################
+# NOT USED, currently we use the normal2disp.py
+######################################################################################
+
 
 def normal_to_depth(K_inv, normal, optimized=False):
     """
