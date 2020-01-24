@@ -119,7 +119,7 @@ class ResnetEncoder(nn.Module):
             if num_input_images > 1:
                 self.encoder = four_channel_resnet_multiimage_input(num_layers, pretrained, num_input_images)
             else:
-                raise NotImplementedError
+                self.encoder = resnets[num_layers](pretrained)
         else:
             raise NotImplementedError
 

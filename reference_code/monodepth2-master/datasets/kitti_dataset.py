@@ -96,7 +96,7 @@ class SuperpixelDataset(KITTIDataset):
     def get_superpixel(self, folder, frame_index, side, do_flip):
 
         path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
-        superpixel = np.load(path)
+        superpixel = np.load(path).astype(np.float32)
 
         if do_flip:
             superpixel = np.fliplr(superpixel)
