@@ -72,7 +72,13 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     pool.close()
     pool.join()
 
-    print("Pool closed. Finished! Converted " + str(results.count(True)) + "/" + str(len(results)) + " succesfully!")
+    print("Pool closed. Finished!")
+    print("Converted " + str(results.count(ConversionState.converted) + results.count(ConversionState.already_converted))
+          + "/" + str(len(results)) + " images to superpixel!")
+    print(str(results.count(ConversionState.already_converted)) + "/" + str(len(results)) + " were already calculated.")
+    print(str(results.count(ConversionState.converted)) + "/" + str(len(results)) + " have been calculated.")
+    print("Failed to calculate" + str(results.count(ConversionState.failed_to_convert)) + "/" + str(len(results))
+          + " images.")
 
 
 def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
@@ -110,6 +116,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
     # check if already converted
     if not os.path.isfile(save_sup_path):
+        print("already calculated")
         # get folder name of the current image to retrieve saving path
 
         # load image
@@ -128,10 +135,10 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         np.save(save_sup_path, sup)
         #print("Converted image to superpixel.")
 
-        return True if os.path.isfile(save_sup_path) else False
+        return ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 
     else:
-        return False
+        return ConversionState.already_converted
 
 
 def calc_superpixel(img, method="fz", args=[]):
@@ -203,6 +210,16 @@ class KittiCamera(IntEnum):
     gray_right = 1
     color_left = 2
     color_right = 3
+
+
+class ConversionState(IntEnum):
+    """
+    State of the conversion
+    """
+
+    converted = 0
+    already_converted = 1
+    failed_to_convert = 2
 
 
 if __name__ == "__main__":
