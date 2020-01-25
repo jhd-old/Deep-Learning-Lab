@@ -90,7 +90,7 @@ class SuperpixelDataset(KITTIDataset):
     def get_image_path(self, folder, frame_index, side):
         f_str = "{:010d}{}".format(frame_index, self.img_ext)
         image_path = os.path.join(
-            self.data_path, folder, "super_image_0{}/data".format(self.side_map[side]), f_str)
+            self.data_path, folder, "image_0{}/data".format(self.side_map[side]), f_str)
         return image_path
 
     def get_superpixel(self, folder, frame_index, side, do_flip):

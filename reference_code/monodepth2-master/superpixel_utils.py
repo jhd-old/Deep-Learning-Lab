@@ -126,7 +126,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         # save superpixel in numpy archive
         np.save(save_sup_path, sup)
-        print("Converted image to superpixel.")
+        #print("Converted image to superpixel.")
 
         return True if os.path.isfile(save_sup_path) else False
 
