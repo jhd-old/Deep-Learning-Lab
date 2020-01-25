@@ -51,7 +51,7 @@ def load_superpixel_from_archive(file_path):
 
 
 def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=[],
-                              img_ext='.jpg', path_insert="super_", save_to_same_folder=True):
+                              img_ext='.jpg', path_insert="super_", num_channel=4):
     """
 
     :param path_to_raw_data:
@@ -59,15 +59,13 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     :param save_path:
     :param superpixel_method:
     :return:
-
-    :TODO: finish implementation
     """
     pool = mp.Pool(mp.cpu_count())
 
     print("Starting multiprocessing pool on " + str(mp.cpu_count()) + " kernels.")
 
     results = [pool.apply(convert_func, args=(dataset_path, path, superpixel_method, superpixel_arguments, img_ext,
-                                              path_insert, save_to_same_folder)) for path in paths]
+                                              path_insert, num_channel)) for path in paths]
 
     pool.close()
     pool.join()
@@ -82,7 +80,7 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
 
 def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
-                 path_insert="super_", save_to_same_folder=True):
+                 path_insert="super_", num_channel=4):
 
     # get image path
     # if none, converts all images in dataset
@@ -105,13 +103,21 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
     img_path = os.path.join(dataset_path, folder, "image_0{}".format(side_map[side]), "data", img_path_1)
 
     # change path to new folder
-    if not save_to_same_folder:
-        save_sup_path = img_path.replace("image", str(path_insert) + "image")
-    else:
+    if num_channel is 4:
+        # save superpixel to same folder
         save_sup_path = img_path
 
-    # change file type to none, numpy will add .npy automatically
-    save_sup_path = save_sup_path.replace(img_ext, "")
+        # change file type to none, numpy will add .npy automatically
+        save_sup_path = save_sup_path.replace(img_ext, "")
+
+    elif num_channel is 3 or num_channel is 6:
+        # save superpixel to seperate folder
+        save_sup_path = img_path.replace("image", str(path_insert) + "image")
+
+    else:
+        raise NotImplementedError("Currently not supported!")
+
+    # replace backslashes
     save_sup_path = save_sup_path.replace("/", "\\")
 
     # check if already converted
@@ -130,8 +136,21 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # create directory to be save
         Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
 
-        # save superpixel in numpy archive
-        np.save(save_sup_path, sup)
+        if num_channel is 4:
+            # save superpixel in numpy archive
+            np.save(save_sup_path, sup)
+
+        elif num_channel is 3 or num_channel is 6:
+            # save as image
+
+            # average over superpixel area
+            sup_img = avg_image(img, sup)
+
+            # convert numpy img back to PIL Image
+            sup_img = Image.fromarray(sup_img)
+
+            # save image
+            sup_img.save(save_sup_path)
 
         return ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 

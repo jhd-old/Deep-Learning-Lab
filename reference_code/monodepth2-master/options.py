@@ -95,11 +95,11 @@ class MonodepthOptions:
                                  type=float,
                                  help="additional arguments for superpixel methods")
 
-        # NORMALS options
-
-        self.parser.add_argument("use_normals",
-                                 help="if set, uses normals",
-                                 action="store_true")
+        self.parser.add_argument("--input_channels",
+                                 type=int,
+                                 help="Number of input channels",
+                                 choices=[3, 4, 6],
+                                 default=4)
 
         # OPTIMIZATION options
         self.parser.add_argument("--batch_size",
