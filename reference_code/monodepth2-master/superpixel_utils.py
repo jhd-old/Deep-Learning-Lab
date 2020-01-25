@@ -116,7 +116,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
     # check if already converted
     if not os.path.isfile(save_sup_path):
-        print("already calculated")
         # get folder name of the current image to retrieve saving path
 
         # load image
@@ -133,7 +132,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         # save superpixel in numpy archive
         np.save(save_sup_path, sup)
-        #print("Converted image to superpixel.")
 
         return ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 
