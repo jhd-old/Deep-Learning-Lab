@@ -46,7 +46,9 @@ class MonoDataset(data.Dataset):
                  frame_idxs,
                  num_scales,
                  is_train=False,
-                 img_ext='.jpg'):
+                 img_ext='.jpg',
+                 use_superpixel=False,
+                 input_channel=3):
         super(MonoDataset, self).__init__()
 
         self.data_path = data_path
@@ -55,6 +57,8 @@ class MonoDataset(data.Dataset):
         self.width = width
         self.num_scales = num_scales
         self.interp = Image.ANTIALIAS
+        self.use_superpixel = use_superpixel
+        self.num_input_channels = input_channel
 
         self.frame_idxs = frame_idxs
 
@@ -108,6 +112,25 @@ class MonoDataset(data.Dataset):
                 inputs[(n, im, i)] = self.to_tensor(f)
                 inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
 
+    def preprocess_superpixel(self, inputs):
+        """
+
+        :param inputs:
+        """
+
+        for k in list(inputs):
+            frame = inputs[k]
+            if "super" in k:
+                n, im, i = k
+                for i in range(self.num_scales):
+                    inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+
+        for k in list(inputs):
+            f = inputs[k]
+            if "super" in k:
+                n, im, i = k
+                inputs[(n, im, i)] = self.to_tensor(f)
+
     def __len__(self):
         return len(self.filenames)
 
@@ -156,9 +179,31 @@ class MonoDataset(data.Dataset):
         for i in self.frame_idxs:
             if i == "s":
                 other_side = {"r": "l", "l": "r"}[side]
-                inputs[("color", i, -1)] = self.get_color(folder, frame_index, other_side, do_flip)
+
+                # check if superpixel input is needed
+                if self.use_superpixel:
+                    inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index, other_side, do_flip)
+
+                    if self.num_input_channels is not 3:
+                        # if num input channels is 3 and superpixels should be used, dont load normal image
+                        inputs[("color", i, -1)] = self.get_color(folder, frame_index, other_side, do_flip)
+
+                else:
+                    # if we dont use superpixel just load normal image
+                    inputs[("color", i, -1)] = self.get_color(folder, frame_index, other_side, do_flip)
+
             else:
-                inputs[("color", i, -1)] = self.get_color(folder, frame_index + i, side, do_flip)
+                # check if superpixel input is needed
+                if self.use_superpixel:
+                    inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index + i, side, do_flip)
+
+                    if self.num_input_channels is not 3:
+                        # if num input channels is 3 and superpixels should be used, dont load normal image
+                        inputs[("color", i, -1)] = self.get_color(folder, frame_index + i, side, do_flip)
+
+                else:
+                    # if we dont use superpixel just load normal image
+                    inputs[("color", i, -1)] = self.get_color(folder, frame_index + i, side, do_flip)
 
         # adjusting intrinsics to match each scale in the pyramid
         for scale in range(self.num_scales):
@@ -178,11 +223,26 @@ class MonoDataset(data.Dataset):
         else:
             color_aug = (lambda x: x)
 
-        self.preprocess(inputs, color_aug)
+        if self.use_superpixel:
+            self.preprocess_superpixel(inputs)
+
+            if not self.num_input_channels is 3:
+                self.preprocess(inputs, color_aug)
+
+        else:
+            self.preprocess(inputs, color_aug)
 
         for i in self.frame_idxs:
-            del inputs[("color", i, -1)]
-            del inputs[("color_aug", i, -1)]
+
+            if self.use_superpixel:
+                del inputs[("super", i, -1)]
+
+                if self.num_input_channels is not 3:
+                    del inputs[("color", i, -1)]
+                    del inputs[("color_aug", i, -1)]
+            else:
+                del inputs[("color", i, -1)]
+                del inputs[("color_aug", i, -1)]
 
         if self.load_depth:
             depth_gt = self.get_depth(folder, frame_index, side, do_flip)
@@ -198,6 +258,9 @@ class MonoDataset(data.Dataset):
             inputs["stereo_T"] = torch.from_numpy(stereo_T)
 
         return inputs
+
+    def get_superpixel(self, folder, frame_index, side, do_flip):
+        raise NotImplementedError
 
     def get_color(self, folder, frame_index, side, do_flip):
         raise NotImplementedError

@@ -80,6 +80,61 @@ class KITTIRAWDataset(KITTIDataset):
         return depth_gt
 
 
+class SuperpixelDataset(KITTIDataset):
+    """
+    Class is basically KITTIRawDataset, just that its loads the images from super_image folders instead of image folders
+    """
+    def __init__(self, *args, **kwargs):
+        super(SuperpixelDataset, self).__init__(*args, **kwargs)
+
+    def get_image_path(self, folder, frame_index, side):
+        f_str = "{:010d}{}".format(frame_index, self.img_ext)
+        image_path = os.path.join(
+            self.data_path, folder, "image_0{}/data".format(self.side_map[side]), f_str)
+        return image_path
+
+    def get_superpixel(self, folder, frame_index, side, do_flip):
+
+        if self.num_input_channels is 4:
+            # so superpixel need to be 1 channel
+            # --> load numpy array with superpixel inidices as data
+            path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
+            superpixel = np.load(path).astype(np.float32)
+
+        elif self.num_input_channels is 3 or self.num_input_channels is 6:
+            # load superpixel data as image
+            # superpixel image are saved in a different folder, so we need to change this here
+
+            path_insert = "super_"
+            path = self.get_image_path(folder, frame_index, side).replace("image", str(path_insert) + "image")
+            superpixel = self.loader(path)
+
+        else:
+            raise NotImplementedError
+
+        if do_flip:
+            superpixel = np.fliplr(superpixel)
+
+        return superpixel
+
+    def get_depth(self, folder, frame_index, side, do_flip):
+        calib_path = os.path.join(self.data_path, folder.split("/")[0])
+
+        velo_filename = os.path.join(
+            self.data_path,
+            folder,
+            "velodyne_points/data/{:010d}.bin".format(int(frame_index)))
+
+        depth_gt = generate_depth_map(calib_path, velo_filename, self.side_map[side])
+        depth_gt = skimage.transform.resize(
+            depth_gt, self.full_res_shape[::-1], order=0, preserve_range=True, mode='constant')
+
+        if do_flip:
+            depth_gt = np.fliplr(depth_gt)
+
+        return depth_gt
+
+
 class KITTIOdomDataset(KITTIDataset):
     """KITTI dataset for odometry training and testing
     """

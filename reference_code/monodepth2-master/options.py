@@ -45,7 +45,7 @@ class MonodepthOptions:
                                  type=str,
                                  help="dataset to train on",
                                  default="kitti",
-                                 choices=["kitti", "kitti_odom", "kitti_depth", "kitti_test"])
+                                 choices=["kitti", "kitti_odom", "kitti_depth", "kitti_test", "kitti_superpixel"])
         self.parser.add_argument("--png",
                                  help="if set, trains from raw KITTI png files (instead of jpgs)",
                                  action="store_true")
@@ -82,6 +82,24 @@ class MonodepthOptions:
                                  type=int,
                                  help="frames to load",
                                  default=[0, -1, 1])
+
+        # SUPERPIXEL options
+        self.parser.add_argument("--superpixel_method",
+                                 type=str,
+                                 help="method to use for superpixel calculation",
+                                 choices=["fz", "slic", "quickshift", "waterhed"],
+                                 default="fz")
+
+        self.parser.add_argument("--superpixel_arguments",
+                                 nargs="+",
+                                 type=float,
+                                 help="additional arguments for superpixel methods")
+
+        self.parser.add_argument("--input_channels",
+                                 type=int,
+                                 help="Number of input channels",
+                                 choices=[3, 4, 6],
+                                 default=3)
 
         # OPTIMIZATION options
         self.parser.add_argument("--batch_size",

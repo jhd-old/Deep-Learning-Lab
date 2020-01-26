@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-
+import superpixel_utils
 import json
 
 from utils import *
@@ -51,8 +51,14 @@ class Trainer:
         if self.opt.use_stereo:
             self.opt.frame_ids.append("s")
 
-        self.models["encoder"] = networks.ResnetEncoder(
-            self.opt.num_layers, self.opt.weights_init == "pretrained")
+        if self.opt.dataset == "kitti_superpixel":
+            # use a four channel resnet encoder
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained", num_channels=4)
+        else:
+            self.models["encoder"] = networks.ResnetEncoder(
+                self.opt.num_layers, self.opt.weights_init == "pretrained")
+
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
@@ -112,27 +118,56 @@ class Trainer:
 
         # data
         datasets_dict = {"kitti": datasets.KITTIRAWDataset,
-                         "kitti_odom": datasets.KITTIOdomDataset}
+                         "kitti_odom": datasets.KITTIOdomDataset,
+                         "kitti_superpixel": datasets.SuperpixelDataset}
         self.dataset = datasets_dict[self.opt.dataset]
 
+        #
+        # Get images that should be used for selected data split
+        #
         fpath = os.path.join(os.path.dirname(__file__), "splits", self.opt.split, "{}_files.txt")
 
         train_filenames = readlines(fpath.format("train"))
         val_filenames = readlines(fpath.format("val"))
         img_ext = '.png' if self.opt.png else '.jpg'
 
+        # Check if superpixel dataset is used and create superpixel image
+        if "superpixel" in self.opt.dataset:
+            # get number of channels to use for superpixel
+            # 4 channel will use numpy array with superpixel indices
+            # 3 channel will use only image averaged over superpixel area
+            # 6 channel will use normal image + image averaged over superpixel area
+
+            # check if superpixel need to be used
+            use_superpixel = True
+
+            num_sup_channels = self.opt.input_channels
+            print("Using {} channel input.".format(num_sup_channels))
+
+            print("Start converting training images to superpixel.")
+            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                                                       self.opt.superpixel_arguments, img_ext=img_ext,
+                                                       num_channel=num_sup_channels)
+
+            print("Start converting validation images to superpixel.")
+            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                                                       self.opt.superpixel_arguments, img_ext=img_ext,
+                                                       num_channel=num_sup_channels)
+        else:
+            use_superpixel = False
+
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
 
         train_dataset = self.dataset(
             self.opt.data_path, train_filenames, self.opt.height, self.opt.width,
-            self.opt.frame_ids, 4, is_train=True, img_ext=img_ext)
+            self.opt.frame_ids, 4, is_train=True, img_ext=img_ext, use_superpixel=use_superpixel)
         self.train_loader = DataLoader(
             train_dataset, self.opt.batch_size, True,
             num_workers=self.opt.num_workers, pin_memory=True, drop_last=True)
         val_dataset = self.dataset(
             self.opt.data_path, val_filenames, self.opt.height, self.opt.width,
-            self.opt.frame_ids, 4, is_train=False, img_ext=img_ext)
+            self.opt.frame_ids, 4, is_train=False, img_ext=img_ext, use_superpixel=use_superpixel)
         self.val_loader = DataLoader(
             val_dataset, self.opt.batch_size, True,
             num_workers=self.opt.num_workers, pin_memory=True, drop_last=True)
@@ -232,6 +267,10 @@ class Trainer:
             inputs[key] = ipt.to(self.device)
 
         if self.opt.pose_model_type == "shared":
+
+            if self.opt.dataset == "kitti_superpixel":
+                raise NotImplementedError("Using superpixel and shared encoder is not implemented yet!")
+
             # If we are using a shared encoder for both depth and pose (as advocated
             # in monodepthv1), then all images are fed separately through the depth encoder.
             all_color_aug = torch.cat([inputs[("color_aug", i, 0)] for i in self.opt.frame_ids])
@@ -245,7 +284,35 @@ class Trainer:
             outputs = self.models["depth"](features[0])
         else:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
-            features = self.models["encoder"](inputs["color_aug", 0, 0])
+
+            if self.opt.dataset == "kitti_superpixel":
+
+                if self.opt.input_channels is 4:
+                    # use four channel encoder
+                    # concat superpixel to the image
+                    image = inputs["color_aug", 0, 0]
+                    superpixel = inputs["super", 0, 0]
+                    inp = torch.cat((image, superpixel), dim=0)
+
+                elif self.opt.input_channels is 3:
+                    # use only superpixel 3 channel input
+                    inp = inputs["super", 0, 0]
+
+                elif self.opt.input_channels is 6:
+                    # use 3 channel superpixel and 3 channel standard rgb image
+                    image = inputs["color_aug", 0, 0]
+                    superpixel = inputs["super", 0, 0]
+                    inp = torch.cat((image, superpixel), dim=0)
+
+                else:
+                    raise NotImplementedError("Given input channel number is not implemented yet!")
+
+                features = self.models["encoder"](inp)
+
+            else:
+                # use standard 3 channel
+                features = self.models["encoder"](inputs["color_aug", 0, 0])
+
             outputs = self.models["depth"](features)
 
         if self.opt.predictive_mask:
