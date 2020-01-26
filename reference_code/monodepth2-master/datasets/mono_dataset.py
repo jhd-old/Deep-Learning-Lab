@@ -45,7 +45,7 @@ class MonoDataset(data.Dataset):
                  width,
                  frame_idxs,
                  num_scales,
-                 opt,
+                 opt=None,
                  is_train=False,
                  img_ext='.jpg'):
         super(MonoDataset, self).__init__()

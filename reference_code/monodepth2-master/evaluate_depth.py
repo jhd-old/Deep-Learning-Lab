@@ -86,7 +86,7 @@ def evaluate(opt):
 
             dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
                                                encoder_dict['height'], encoder_dict['width'],
-                                               [0], 4, is_train=False, use_superpixel=True)
+                                               [0], 4, opt, is_train=False, use_superpixel=True)
         else:
             dataset = datasets.KITTIRAWDataset(opt.data_path, filenames,
                                                encoder_dict['height'], encoder_dict['width'],
@@ -150,7 +150,7 @@ def evaluate(opt):
                     # print("new depth tensor shape", depth.shape)
 
                     output[("disp", 0)] = nd.depth_to_disp(K, depth)
-                    
+
                     # scaling of disp to min_depth to max_depth
                     pred_disp, _ = disp_to_depth(output[("disp", 0)], opt.min_depth, opt.max_depth)
                     pred_disp = pred_disp.cpu()[:, 0].numpy()
