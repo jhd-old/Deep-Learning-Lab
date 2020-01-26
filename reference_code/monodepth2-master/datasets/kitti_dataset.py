@@ -95,8 +95,22 @@ class SuperpixelDataset(KITTIDataset):
 
     def get_superpixel(self, folder, frame_index, side, do_flip):
 
-        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
-        superpixel = np.load(path).astype(np.float32)
+        if self.num_input_channels is 4:
+            # so superpixel need to be 1 channel
+            # --> load numpy array with superpixel inidices as data
+            path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
+            superpixel = np.load(path).astype(np.float32)
+
+        elif self.num_input_channels is 3 or self.num_input_channels is 6:
+            # load superpixel data as image
+            # superpixel image are saved in a different folder, so we need to change this here
+
+            path_insert = "super_"
+            path = self.get_image_path(folder, frame_index, side).replace("image", str(path_insert) + "image")
+            superpixel = self.loader(path)
+
+        else:
+            raise NotImplementedError
 
         if do_flip:
             superpixel = np.fliplr(superpixel)

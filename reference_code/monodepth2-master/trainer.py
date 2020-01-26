@@ -138,7 +138,10 @@ class Trainer:
             # 3 channel will use only image averaged over superpixel area
             # 6 channel will use normal image + image averaged over superpixel area
 
-            num_sup_channels = self.opt.superpixel_channels
+            # check if superpixel need to be used
+            use_superpixel = True
+
+            num_sup_channels = self.opt.input_channels
             print("Using {} channel input.".format(num_sup_channels))
 
             print("Start converting training images to superpixel.")
@@ -150,19 +153,21 @@ class Trainer:
             superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
                                                        self.opt.superpixel_arguments, img_ext=img_ext,
                                                        num_channel=num_sup_channels)
+        else:
+            use_superpixel = False
 
         num_train_samples = len(train_filenames)
         self.num_total_steps = num_train_samples // self.opt.batch_size * self.opt.num_epochs
 
         train_dataset = self.dataset(
             self.opt.data_path, train_filenames, self.opt.height, self.opt.width,
-            self.opt.frame_ids, 4, is_train=True, img_ext=img_ext)
+            self.opt.frame_ids, 4, is_train=True, img_ext=img_ext, use_superpixel=use_superpixel)
         self.train_loader = DataLoader(
             train_dataset, self.opt.batch_size, True,
             num_workers=self.opt.num_workers, pin_memory=True, drop_last=True)
         val_dataset = self.dataset(
             self.opt.data_path, val_filenames, self.opt.height, self.opt.width,
-            self.opt.frame_ids, 4, is_train=False, img_ext=img_ext)
+            self.opt.frame_ids, 4, is_train=False, img_ext=img_ext, use_superpixel=use_superpixel)
         self.val_loader = DataLoader(
             val_dataset, self.opt.batch_size, True,
             num_workers=self.opt.num_workers, pin_memory=True, drop_last=True)
