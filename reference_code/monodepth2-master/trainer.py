@@ -25,6 +25,8 @@ import datasets
 import networks
 from IPython import embed
 
+#import normal_to_depth as nd
+import normal2disp as nd
 
 class Trainer:
     def __init__(self, options):
@@ -62,8 +64,13 @@ class Trainer:
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
-        self.models["depth"] = networks.DepthDecoder(
-            self.models["encoder"].num_ch_enc, self.opt.scales)
+        if self.opt.decoder == "standard":
+            self.models["depth"] = networks.DepthDecoder(
+                self.models["encoder"].num_ch_enc, self.opt.scales)
+        elif self.opt.decoder == "normal_vector":
+            self.models["depth"] = networks.NormalDecoder(
+                self.models["encoder"].num_ch_enc, self.opt.scales)
+
         self.models["depth"].to(self.device)
         self.parameters_to_train += list(self.models["depth"].parameters())
 
@@ -315,13 +322,17 @@ class Trainer:
 
             outputs = self.models["depth"](features)
 
+
+        
         if self.opt.predictive_mask:
             outputs["predictive_mask"] = self.models["predictive_mask"](features)
 
         if self.use_pose_net:
             outputs.update(self.predict_poses(inputs, features))
 
-        self.generate_images_pred(inputs, outputs)
+        # changed method to Transform Normal "outputs" to former disparity outputs and return new outputs 
+        outputs = self.generate_images_pred(inputs, outputs)
+        
         losses = self.compute_losses(inputs, outputs)
 
         return outputs, losses
@@ -409,14 +420,45 @@ class Trainer:
         """Generate the warped (reprojected) color images for a minibatch.
         Generated images are saved into the `outputs` dictionary.
         """
+        ###
+        #edit by Jan
+
         for scale in self.opt.scales:
-            disp = outputs[("disp", scale)]
+
+            #check which type of decoder is used 
+            if self.opt.decoder == "normal_vector":
+                # tranform normals to depth to disp
+                normal_vec = outputs[("normal_vec"), scale]
+
+                #print("Normal vector shape: ", normal_vec.shape)
+
+                K = inputs[("K", scale)]
+                K_inv = inputs[("inv_K", scale)]
+
+                depth = nd.normal_to_depth(K_inv, normal_vec)
+                #print("new depth tensor shape", depth.shape)
+
+                disp = nd.depth_to_disp(K, depth)
+                #print("disp shape ", disp.shape)
+
+                # add disparity entry in dictionary
+                outputs[("disp", scale)] = disp
+                disp = outputs[("disp", scale)]
+                # outputs[("depth", 0, scale)] = depth
+                # source_scale = scale
+
+            else:
+                disp = outputs[("disp", scale)]
+
+
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
-                disp = F.interpolate(
+                 disp = F.interpolate(
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                source_scale = 0
+                 source_scale = 0
+            # added if-statement to prevent overhead (depth would be calculated 2times)
+            # if not self.opt.decoder == "normal_vector":
 
             _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
 
@@ -456,6 +498,8 @@ class Trainer:
                 if not self.opt.disable_automasking:
                     outputs[("color_identity", frame_id, scale)] = \
                         inputs[("color", frame_id, source_scale)]
+        #added return
+        return outputs
 
     def compute_reprojection_loss(self, pred, target):
         """Computes reprojection loss between a batch of predicted and target images

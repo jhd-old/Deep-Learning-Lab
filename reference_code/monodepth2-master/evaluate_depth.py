@@ -13,6 +13,8 @@ from options import MonodepthOptions
 import datasets
 import networks
 
+import normal2disp as nd
+
 cv2.setNumThreads(0)  # This speeds up evaluation 5x on our unix systems (OpenCV 3.3.1)
 
 
@@ -87,7 +89,12 @@ def evaluate(opt):
                                 pin_memory=True, drop_last=False)
 
         encoder = networks.ResnetEncoder(opt.num_layers, False)
-        depth_decoder = networks.DepthDecoder(encoder.num_ch_enc)
+
+        # if the surface normal are used we have to select the NormalDecoder instead of the Depth Decoder.
+        if opt.decoder == "normal_vector":
+            depth_decoder = networks.NormalDecoder(encoder.num_ch_enc)
+        else:
+            depth_decoder = networks.DepthDecoder(encoder.num_ch_enc)
 
         model_dict = encoder.state_dict()
         encoder.load_state_dict({k: v for k, v in encoder_dict.items() if k in model_dict})
@@ -106,6 +113,8 @@ def evaluate(opt):
         with torch.no_grad():
             for data in dataloader:
                 input_color = data[("color", 0, 0)].cuda()
+                K = data[("K", 0)].cuda()
+                K_inv = data[("inv_K", 0)]
 
                 if opt.post_process:
                     # Post-processed results require each image to have two forward passes
@@ -113,8 +122,22 @@ def evaluate(opt):
 
                 output = depth_decoder(encoder(input_color))
 
-                pred_disp, _ = disp_to_depth(output[("disp", 0)], opt.min_depth, opt.max_depth)
-                pred_disp = pred_disp.cpu()[:, 0].numpy()
+                if opt.decoder == "normal_vector":
+
+                    normal_vec = output[("normal_vec", 0)]
+
+                    depth = nd.normal_to_depth(K_inv, normal_vec)
+                    # print("new depth tensor shape", depth.shape)
+
+                    output[("disp", 0)] = nd.depth_to_disp(K, depth)
+                    
+                    # scaling of disp to min_depth to max_depth
+                    pred_disp, _ = disp_to_depth(output[("disp", 0)], opt.min_depth, opt.max_depth)
+                    pred_disp = pred_disp.cpu()[:, 0].numpy()
+
+                else:
+                    pred_disp, _ = disp_to_depth(output[("disp", 0)], opt.min_depth, opt.max_depth)
+                    pred_disp = pred_disp.cpu()[:, 0].numpy()
 
                 if opt.post_process:
                     N = pred_disp.shape[0] // 2

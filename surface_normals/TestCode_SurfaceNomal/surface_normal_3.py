@@ -25,3 +25,6 @@ def surface_normal(path):
     normal *= 255
 
     cv2.imwrite("normal3Cat.png", normal[:, :, ::-1])
+
+    return normal, d_im
+
