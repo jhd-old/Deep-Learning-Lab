@@ -267,6 +267,10 @@ class Trainer:
             inputs[key] = ipt.to(self.device)
 
         if self.opt.pose_model_type == "shared":
+
+            if self.opt.dataset == "kitti_superpixel":
+                raise NotImplementedError("Using superpixel and shared encoder is not implemented yet!")
+
             # If we are using a shared encoder for both depth and pose (as advocated
             # in monodepthv1), then all images are fed separately through the depth encoder.
             all_color_aug = torch.cat([inputs[("color_aug", i, 0)] for i in self.opt.frame_ids])
@@ -282,13 +286,29 @@ class Trainer:
             # Otherwise, we only feed the image with frame_id 0 through the depth encoder
 
             if self.opt.dataset == "kitti_superpixel":
-                # use four channel encoder
-                # concat superpixel to the image
-                image = inputs["color_aug", 0, 0]
-                superpixel = inputs["super", 0, 0]
-                four_chan = torch.cat((image, superpixel), dim=0)
 
-                features = self.models["encoder"](four_chan)
+                if self.opt.input_channels is 4:
+                    # use four channel encoder
+                    # concat superpixel to the image
+                    image = inputs["color_aug", 0, 0]
+                    superpixel = inputs["super", 0, 0]
+                    inp = torch.cat((image, superpixel), dim=0)
+
+                if self.opt.input_channels is 3:
+                    # use only superpixel 3 channel input
+                    inp = inputs["super", 0, 0]
+
+                if self.opt.input_channels is 6:
+                    # use 3 channel superpixel and 3 channel standard rgb image
+                    image = inputs["color_aug", 0, 0]
+                    superpixel = inputs["super", 0, 0]
+                    inp = torch.cat((image, superpixel), dim=0)
+
+                else:
+                    raise NotImplementedError("Given input channel number is not implemented yet!")
+
+                features = self.models["encoder"](inp)
+
             else:
                 # use standard 3 channel
                 features = self.models["encoder"](inputs["color_aug", 0, 0])
