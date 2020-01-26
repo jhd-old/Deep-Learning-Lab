@@ -96,7 +96,7 @@ def evaluate(opt):
                                 pin_memory=True, drop_last=False)
 
         # will use encoder according to number of input channels
-        encoder = networks.ResnetEncoder(opt.num_layers, False, num_channels=opt.input_channels)
+        encoder = networks.ResnetEncoder(opt.num_layers, False, num_input_channels=opt.input_channels)
 
         # if the surface normal are used we have to select the NormalDecoder instead of the Depth Decoder.
         if opt.decoder == "normal_vector":

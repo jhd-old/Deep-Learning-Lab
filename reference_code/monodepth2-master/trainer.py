@@ -56,7 +56,7 @@ class Trainer:
         if self.opt.dataset == "kitti_superpixel":
             # use a four channel resnet encoder
             self.models["encoder"] = networks.ResnetEncoder(
-                self.opt.num_layers, self.opt.weights_init == "pretrained", num_channels=4)
+                self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_channels=4)
         else:
             self.models["encoder"] = networks.ResnetEncoder(
                 self.opt.num_layers, self.opt.weights_init == "pretrained")

@@ -65,23 +65,23 @@ class SixChannelResNetMultiImageInput(ResNetMultiImageInput):
             num_input_images * 6, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
 
-def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, num_channels=3):
+def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, num_input_channels=3):
     """Constructs a ResNet model.
     Args:
         num_layers (int): Number of resnet layers. Must be 18 or 50
         pretrained (bool): If True, returns a model pre-trained on ImageNet
         num_input_images (int): Number of frames stacked as input
-        num_channels (int): Number of channels to input
+        num_input_channels (int): Number of channels to input
     """
     assert num_layers in [18, 50], "Can only run with 18 or 50 layer resnet"
     blocks = {18: [2, 2, 2, 2], 50: [3, 4, 6, 3]}[num_layers]
     block_type = {18: models.resnet.BasicBlock, 50: models.resnet.Bottleneck}[num_layers]
 
-    if num_channels is 3:
+    if num_input_channels is 3:
         model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
-    elif num_channels is 4:
+    elif num_input_channels is 4:
         model = FourChannelResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
-    elif num_channels is 6:
+    elif num_input_channels is 6:
         model = SixChannelResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
     else:
         raise NotImplementedError
@@ -97,7 +97,7 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, nu
 class ResnetEncoder(nn.Module):
     """Pytorch module for a resnet encoder
     """
-    def __init__(self, num_layers, pretrained, num_input_images=1, num_channels=3):
+    def __init__(self, num_layers, pretrained, num_input_images=1, num_input_channels=3):
         super(ResnetEncoder, self).__init__()
 
         self.num_ch_enc = np.array([64, 64, 128, 256, 512])
@@ -111,21 +111,21 @@ class ResnetEncoder(nn.Module):
         if num_layers not in resnets:
             raise ValueError("{} is not a valid number of resnet layers".format(num_layers))
 
-        if num_channels == 3:
+        if num_input_channels == 3:
             if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_channels=3)
+                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=3)
             else:
                 self.encoder = resnets[num_layers](pretrained)
 
-        elif num_channels == 4:
+        elif num_input_channels == 4:
             if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_channels=4)
+                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=4)
             else:
                 self.encoder = resnets[num_layers](pretrained)
 
-        elif num_channels == 6:
+        elif num_input_channels == 6:
             if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_channels=6)
+                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=6)
             else:
                 self.encoder = resnets[num_layers](pretrained)
 
