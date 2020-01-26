@@ -60,6 +60,10 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     :param superpixel_method:
     :return:
     """
+
+    print("Using {} method with {}, {}, {} as arguments!".format(superpixel_method, superpixel_arguments[0],
+                                                                 superpixel_arguments[1],
+                                                                 superpixel_arguments[2]))
     pool = mp.Pool(mp.cpu_count())
 
     print("Starting multiprocessing pool on " + str(mp.cpu_count()) + " kernels.")
@@ -82,6 +86,10 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
                  path_insert="super_", num_channel=4):
 
+    # TODO: change this back
+    # for now force to only save as 1 channel with indices
+    num_channel = 4
+
     # get image path
     # if none, converts all images in dataset
     line = path.split()
@@ -102,7 +110,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
     img_path_1 = "{:010d}{}".format(frame_index, img_ext)
     img_path = os.path.join(dataset_path, folder, "image_0{}".format(side_map[side]), "data", img_path_1)
 
-    # change path to new folder
     if num_channel is 4:
         # save superpixel to same folder
         save_sup_path = img_path
@@ -110,9 +117,24 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # change file type to none, numpy will add .npy automatically
         save_sup_path = save_sup_path.replace(img_ext, "")
 
+        # add identifier for superpixel method and arguments
+        superpixel_ident = str(method)
+
+        for a in superpixel_arguments:
+            superpixel_ident += str(a)
+
+        save_sup_path += superpixel_ident
+
     elif num_channel is 3 or num_channel is 6:
         # save superpixel to seperate folder
         save_sup_path = img_path.replace("image", str(path_insert) + "image")
+
+        # add identifier for superpixel method and arguments
+        superpixel_ident = str(method)
+
+        for a in superpixel_arguments:
+            superpixel_ident += str(a)
+        save_sup_path.replace(img_ext, superpixel_ident + img_ext)
 
     else:
         raise NotImplementedError("Currently not supported!")

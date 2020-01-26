@@ -58,6 +58,18 @@ class MonodepthOptions:
                                  type=float,
                                  help="additional arguments for superpixel methods")
 
+        # LOSS
+        # use superpixel information for loss function
+        self.parser.add_argument("--superpixel_loss",
+                                 help="uses superpixel information for the loss fuction",
+                                 action="store_true")
+
+        # weighting factor for superpixel loss
+        self.parser.add_argument("--superpixel_smoothness",
+                                 type=float,
+                                 help="factor to add superpixel loss weighted to the total loss",
+                                 default=0.1)
+
         ##############################################
         # OLD EXTISTING ARGUMENTS (by Monodepth2)
         ##############################################

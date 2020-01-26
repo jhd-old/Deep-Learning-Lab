@@ -322,8 +322,6 @@ class Trainer:
 
             outputs = self.models["depth"](features)
 
-
-        
         if self.opt.predictive_mask:
             outputs["predictive_mask"] = self.models["predictive_mask"](features)
 
@@ -425,21 +423,18 @@ class Trainer:
 
         for scale in self.opt.scales:
 
-            #check which type of decoder is used 
+            # check which type of decoder is used
             if self.opt.decoder == "normal_vector":
-                # tranform normals to depth to disp
-                normal_vec = outputs[("normal_vec"), scale]
 
-                #print("Normal vector shape: ", normal_vec.shape)
+                # tranform normals to depth to disp
+                normal_vec = outputs[("normal_vec", scale)]
 
                 K = inputs[("K", scale)]
                 K_inv = inputs[("inv_K", scale)]
 
                 depth = nd.normal_to_depth(K_inv, normal_vec)
-                #print("new depth tensor shape", depth.shape)
 
                 disp = nd.depth_to_disp(K, depth)
-                #print("disp shape ", disp.shape)
 
                 # add disparity entry in dictionary
                 outputs[("disp", scale)] = disp
@@ -450,13 +445,13 @@ class Trainer:
             else:
                 disp = outputs[("disp", scale)]
 
-
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
                  disp = F.interpolate(
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
                  source_scale = 0
+
             # added if-statement to prevent overhead (depth would be calculated 2times)
             # if not self.opt.decoder == "normal_vector":
 
@@ -498,8 +493,24 @@ class Trainer:
                 if not self.opt.disable_automasking:
                     outputs[("color_identity", frame_id, scale)] = \
                         inputs[("color", frame_id, source_scale)]
-        #added return
+        # added return
         return outputs
+
+    def compute_superpixel_loss(self, superpixel, normals):
+        """
+        compute the loss with superpixel information.
+        Forces normal vectors in one superpixel to be equal.
+
+        :param superpixel: superpixel indices
+        :param normals: vector normals
+        :return: superpixel loss
+
+        :TODO: finish implementation
+        """
+
+        sup_loss = 0
+
+        return sup_loss
 
     def compute_reprojection_loss(self, pred, target):
         """Computes reprojection loss between a batch of predicted and target images
@@ -518,6 +529,31 @@ class Trainer:
     def compute_losses(self, inputs, outputs):
         """Compute the reprojection and smoothness losses for a minibatch
         """
+
+        """
+        Some explanation for the following lines:
+        
+        options:
+        
+        1. v1_multiscale: 
+            True: the reprojection error will be calculated between same scales
+            False: the reprojection error will be calculated between current scale and scale=0
+            
+        2. frame_ids:
+            -1: last frame
+            0: current frame
+            1: next frame
+        
+        3. automasking:
+            True: calculate identity reprojection loss
+            False: dont calculate identity reprojection loss
+        
+        4. Reprojection loss:
+            reprojection between current scale and frame id to target scale and id=0
+            
+        4. Identity reprojection loss:
+        
+        """
         losses = {}
         total_loss = 0
 
@@ -525,6 +561,7 @@ class Trainer:
             loss = 0
             reprojection_losses = []
 
+            # not used per default
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
@@ -540,6 +577,7 @@ class Trainer:
 
             reprojection_losses = torch.cat(reprojection_losses, 1)
 
+            # USED PER DEFAULT
             if not self.opt.disable_automasking:
                 identity_reprojection_losses = []
                 for frame_id in self.opt.frame_ids[1:]:
@@ -555,6 +593,7 @@ class Trainer:
                     # save both images, and do min all at once below
                     identity_reprojection_loss = identity_reprojection_losses
 
+            # not used per default
             elif self.opt.predictive_mask:
                 # use the predicted mask
                 mask = outputs["predictive_mask"]["disp", scale]
@@ -569,11 +608,13 @@ class Trainer:
                 weighting_loss = 0.2 * nn.BCELoss()(mask, torch.ones(mask.shape).cuda())
                 loss += weighting_loss.mean()
 
+            # not used per default
             if self.opt.avg_reprojection:
                 reprojection_loss = reprojection_losses.mean(1, keepdim=True)
             else:
                 reprojection_loss = reprojection_losses
 
+            # USED PER DEFAULT
             if not self.opt.disable_automasking:
                 # add random numbers to break ties
                 identity_reprojection_loss += torch.randn(
@@ -588,6 +629,7 @@ class Trainer:
             else:
                 to_optimise, idxs = torch.min(combined, dim=1)
 
+            # USED PER DEFAULT
             if not self.opt.disable_automasking:
                 outputs["identity_selection/{}".format(scale)] = (
                     idxs > identity_reprojection_loss.shape[1] - 1).float()
@@ -599,6 +641,19 @@ class Trainer:
             smooth_loss = get_smooth_loss(norm_disp, color)
 
             loss += self.opt.disparity_smoothness * smooth_loss / (2 ** scale)
+
+            # add addtional superpixel loss if selected
+            if self.opt.superpixel_loss:
+
+                # need to be sure that superpixel dataset is used
+                if self.opt.dataset == "kitti_superpixel":
+
+                    superpixel = outputs[("super", 0, scale)]
+                    loss += self.opt.superpixel_smoothness*self.compute_superpixel_loss(superpixel, color)/(2 ** scale)
+
+                else:
+                    print("Warning: superpixel loss cant be used, because superpixel dataset isn't selected!")
+
             total_loss += loss
             losses["loss/{}".format(scale)] = loss
 

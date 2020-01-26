@@ -245,6 +245,8 @@ class SSIM(nn.Module):
         SSIM_n = (2 * mu_x * mu_y + self.C1) * (2 * sigma_xy + self.C2)
         SSIM_d = (mu_x ** 2 + mu_y ** 2 + self.C1) * (sigma_x + sigma_y + self.C2)
 
+        # torch.clamp clips values outside the interval.
+        # this forces this value to be in between 0 and 1.
         return torch.clamp((1 - SSIM_n / SSIM_d) / 2, 0, 1)
 
 
