@@ -294,11 +294,11 @@ class Trainer:
                     superpixel = inputs["super", 0, 0]
                     inp = torch.cat((image, superpixel), dim=0)
 
-                if self.opt.input_channels is 3:
+                elif self.opt.input_channels is 3:
                     # use only superpixel 3 channel input
                     inp = inputs["super", 0, 0]
 
-                if self.opt.input_channels is 6:
+                elif self.opt.input_channels is 6:
                     # use 3 channel superpixel and 3 channel standard rgb image
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super", 0, 0]
