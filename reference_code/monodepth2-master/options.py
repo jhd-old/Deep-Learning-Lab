@@ -16,6 +16,50 @@ class MonodepthOptions:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description="Monodepthv2 options")
 
+        ##############################################
+        # NEW ADDED ARGUMENTS
+        ##############################################
+
+        # choose which decoder type to use.
+        # standart monodepth2 decoder or new normal vector based decoder
+        self.parser.add_argument("--decoder",
+                                 type=str,
+                                 help="standart or normal_vector",
+                                 default="standart",
+                                 choices=["standart", "normal_vector"])
+
+        # choose how the input should look like. There are the following options:
+        # 1.1 3-channel input (standard RGB image) [if dataset is kitti dataset]
+        # 1.2 3-channel input (RGB image averaged over superpixel area) [if dataset is kitti_superpixel]
+        # 2. 4-channel input (standard RGB image + superpixel as indices) [dataset needs to be kitti_superpixel]
+        # 3. 6-channel input (standard RGB image + RGB image averaged over superpixel area
+        # [dataset needs to be kitti_superpixel]
+
+        self.parser.add_argument("--input_channels",
+                                 type=int,
+                                 help="Number of input channels",
+                                 choices=[3, 4, 6],
+                                 default=3)
+
+        # SUPERPIXEL options
+        # choose superpixel method
+        # currently only fz and slic are implemented
+        self.parser.add_argument("--superpixel_method",
+                                 type=str,
+                                 help="method to use for superpixel calculation",
+                                 choices=["fz", "slic", "quickshift", "waterhed"],
+                                 default="fz")
+
+        # additional arguments for superpixel calculation
+        self.parser.add_argument("--superpixel_arguments",
+                                 nargs="+",
+                                 type=float,
+                                 help="additional arguments for superpixel methods")
+
+        ##############################################
+        # OLD EXTISTING ARGUMENTS
+        ##############################################
+
         # PATHS
         self.parser.add_argument("--data_path",
                                  type=str,
@@ -83,24 +127,6 @@ class MonodepthOptions:
                                  help="frames to load",
                                  default=[0, -1, 1])
 
-        # SUPERPIXEL options
-        self.parser.add_argument("--superpixel_method",
-                                 type=str,
-                                 help="method to use for superpixel calculation",
-                                 choices=["fz", "slic", "quickshift", "waterhed"],
-                                 default="fz")
-
-        self.parser.add_argument("--superpixel_arguments",
-                                 nargs="+",
-                                 type=float,
-                                 help="additional arguments for superpixel methods")
-
-        self.parser.add_argument("--input_channels",
-                                 type=int,
-                                 help="Number of input channels",
-                                 choices=[3, 4, 6],
-                                 default=3)
-
         # OPTIMIZATION options
         self.parser.add_argument("--batch_size",
                                  type=int,
@@ -150,11 +176,7 @@ class MonodepthOptions:
                                  help="normal or shared",
                                  default="separate_resnet",
                                  choices=["posecnn", "separate_resnet", "shared"])
-        self.parser.add_argument("--decoder",
-                                 type=str,
-                                 help="standart or normal_vector",
-                                 default="standart",
-                                 choices=["standart", "normal_vector"])
+
 
         # SYSTEM options
         self.parser.add_argument("--no_cuda",
