@@ -47,17 +47,19 @@ class MonodepthOptions:
         self.parser.add_argument("--superpixel_method",
                                  type=str,
                                  help="method to use for superpixel calculation",
-                                 choices=["fz", "slic", "quickshift", "waterhed"],
+                                 choices=["fz", "slic"],
                                  default="fz")
 
         # additional arguments for superpixel calculation
+        # 1. for fz: scale=int(scale), sigma=sigma, min_size=int(min_size)
+        # 2. for slic: n_segments=int(num_seg), compactness=comp, sigma=sig
         self.parser.add_argument("--superpixel_arguments",
                                  nargs="+",
                                  type=float,
                                  help="additional arguments for superpixel methods")
 
         ##############################################
-        # OLD EXTISTING ARGUMENTS
+        # OLD EXTISTING ARGUMENTS (by Monodepth2)
         ##############################################
 
         # PATHS
