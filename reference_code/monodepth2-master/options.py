@@ -99,7 +99,7 @@ class MonodepthOptions:
                                  type=int,
                                  help="Number of input channels",
                                  choices=[3, 4, 6],
-                                 default=4)
+                                 default=3)
 
         # OPTIMIZATION options
         self.parser.add_argument("--batch_size",
