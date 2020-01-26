@@ -10,6 +10,7 @@ import os
 import skimage.transform
 import numpy as np
 import PIL.Image as pil
+from superpixel_utils import avg_image
 
 from kitti_utils import generate_depth_map
 from .mono_dataset import MonoDataset
@@ -93,24 +94,21 @@ class SuperpixelDataset(KITTIDataset):
             self.data_path, folder, "image_0{}/data".format(self.side_map[side]), f_str)
         return image_path
 
-    def get_superpixel(self, folder, frame_index, side, do_flip):
+    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None):
 
-        if self.num_input_channels is 4:
-            # so superpixel need to be 1 channel
-            # --> load numpy array with superpixel inidices as data
-            path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, ".npy")
-            superpixel = np.load(path).astype(np.float32)
+        # so superpixel is always saved as 1 channel
+        # --> load numpy array with superpixel inidices as data
 
-        elif self.num_input_channels is 3 or self.num_input_channels is 6:
-            # load superpixel data as image
-            # superpixel image are saved in a different folder, so we need to change this here
+        superpixel_ident = str(method)
 
-            path_insert = "super_"
-            path = self.get_image_path(folder, frame_index, side).replace("image", str(path_insert) + "image")
-            superpixel = self.loader(path)
+        for a in arguments:
+            superpixel_ident += str(a)
 
-        else:
-            raise NotImplementedError
+        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npy"))
+        superpixel = np.load(path).astype(np.float32)
+
+        if channel is 3:
+            superpixel = avg_image(img, superpixel)
 
         if do_flip:
             superpixel = np.fliplr(superpixel)
