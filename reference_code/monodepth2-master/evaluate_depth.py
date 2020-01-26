@@ -82,13 +82,21 @@ def evaluate(opt):
 
         encoder_dict = torch.load(encoder_path)
 
-        dataset = datasets.KITTIRAWDataset(opt.data_path, filenames,
-                                           encoder_dict['height'], encoder_dict['width'],
-                                           [0], 4, is_train=False)
+        if opt.dataset == "kitti_superpixel":
+
+            dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
+                                               encoder_dict['height'], encoder_dict['width'],
+                                               [0], 4, is_train=False, use_superpixel=True)
+        else:
+            dataset = datasets.KITTIRAWDataset(opt.data_path, filenames,
+                                               encoder_dict['height'], encoder_dict['width'],
+                                               [0], 4, is_train=False)
+
         dataloader = DataLoader(dataset, 16, shuffle=False, num_workers=opt.num_workers,
                                 pin_memory=True, drop_last=False)
 
-        encoder = networks.ResnetEncoder(opt.num_layers, False)
+        # will use encoder according to number of input channels
+        encoder = networks.ResnetEncoder(opt.num_layers, False, num_channels=opt.input_channels)
 
         # if the surface normal are used we have to select the NormalDecoder instead of the Depth Decoder.
         if opt.decoder == "normal_vector":
@@ -112,7 +120,19 @@ def evaluate(opt):
 
         with torch.no_grad():
             for data in dataloader:
-                input_color = data[("color", 0, 0)].cuda()
+
+                if opt.dataset == "kitti_superpixel":
+                    if opt.input_channels is 3:
+                        input_color = data[("super", 0, 0)].cuda()
+                    elif opt.input_channels is 4 or opt.input_channels is 6:
+                        color = data[("color", 0, 0)].cuda()
+                        superpixel = data[("super", 0, 0)].cuda()
+                        input_color = torch.cat((color, superpixel), dim=0)
+                    else:
+                        raise NotImplementedError("given input channel size is not implemented.")
+                else:
+                    input_color = data[("color", 0, 0)].cuda()
+
                 K = data[("K", 0)].cuda()
                 K_inv = data[("inv_K", 0)]
 
