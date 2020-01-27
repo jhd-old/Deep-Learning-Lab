@@ -14,7 +14,7 @@ import torch.nn.functional as F
 import torch.optim as optim
 from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-import superpixel_utils
+from superpixel import *
 import json
 
 from utils import *

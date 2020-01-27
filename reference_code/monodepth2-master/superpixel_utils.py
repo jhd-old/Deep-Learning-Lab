@@ -1,14 +1,13 @@
+from __future__ import absolute_import, division, print_function
+
 import numpy as np
 from enum import IntEnum
 import os
-from skimage.io import imread, imsave
-from skimage.util import img_as_float
+
 from skimage.color import label2rgb
 from skimage.segmentation import felzenszwalb, slic, quickshift, watershed
-from datasets.kitti_dataset import KITTIRAWDataset
 from datasets.mono_dataset import pil_loader
 from PIL import Image
-from matplotlib import pyplot as plt
 from pathlib import Path
 import multiprocessing as mp
 
@@ -118,7 +117,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         save_sup_path = save_sup_path.replace(img_ext, "")
 
         # add identifier for superpixel method and arguments
-        superpixel_ident = str(method)
+        superpixel_ident = str(superpixel_method)
 
         for a in superpixel_arguments:
             superpixel_ident += str(a)
@@ -130,7 +129,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         save_sup_path = img_path.replace("image", str(path_insert) + "image")
 
         # add identifier for superpixel method and arguments
-        superpixel_ident = str(method)
+        superpixel_ident = str(superpixel_method)
 
         for a in superpixel_arguments:
             superpixel_ident += str(a)
@@ -243,9 +242,9 @@ def avg_image(image, label):
     :rtype: numpy nd-array
     """
 
-    avg_image = label2rgb(label, image, kind='avg')
+    image = label2rgb(label, image, kind='avg')
 
-    return avg_image
+    return image
 
 
 class KittiCamera(IntEnum):
@@ -267,12 +266,3 @@ class ConversionState(IntEnum):
     converted = 0
     already_converted = 1
     failed_to_convert = 2
-
-
-if __name__ == "__main__":
-
-    data_set = ""
-    method = "fz"
-
-    convert_rgb_to_superpixel()
-
