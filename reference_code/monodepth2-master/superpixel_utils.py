@@ -133,8 +133,8 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         for a in superpixel_arguments:
             # replace . with _
-            a = a.replace(".", "_")
-            superpixel_ident += str(a)
+            a = str(a).replace(".", "_")
+            superpixel_ident += a
 
         save_sup_path += superpixel_ident
 
