@@ -66,8 +66,8 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
     elif None in superpixel_arguments:
         print("Using {} method with wrong arguments. At least one of them was None!".format(superpixel_method))
-        
-    if len(superpixel_arguments) is 3:
+
+    elif len(superpixel_arguments) is 3:
         print("Using {} method with {}, {}, {} as arguments!".format(superpixel_method, superpixel_arguments[0],
                                                                      superpixel_arguments[1],
                                                                      superpixel_arguments[2]))
