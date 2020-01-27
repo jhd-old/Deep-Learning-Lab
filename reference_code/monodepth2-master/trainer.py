@@ -368,7 +368,7 @@ class Trainer:
                 K = inputs[("K", scale)]
                 K_inv = inputs[("inv_K", scale)]
 
-                depth = nd.normal_to_depth(K_inv, normal_vec)
+                depth = nd.normal_to_depth(K_inv, normal_vec, self.opt.min_depth, self.opt.max_depth)
                 #print("new depth tensor shape", depth.shape)
 
                 disp = nd.depth_to_disp(K, depth)

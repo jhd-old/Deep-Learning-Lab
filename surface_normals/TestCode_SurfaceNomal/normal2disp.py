@@ -3,7 +3,7 @@ import torch
 from torch import nn
 
 
-def normal_to_depth(inv_K, normal, min_depth, max_depth):
+def normal_to_depth(inv_K, normal):
     """
     Converts normal vectors to depth.
 
@@ -18,8 +18,8 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     h = normal.shape[2]
     w = normal.shape[3]
 
-    inv_K = inv_K[0, 0:3, 0:3].cuda().float()
-
+    #inv_K = inv_K[0, 0:3, 0:3].cuda().float()
+    inv_K = torch.from_numpy(inv_K).float()
     # init meshgrid for image height and width
     meshgrid = np.meshgrid(range(w), range(h), indexing='xy')
 
@@ -28,7 +28,7 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
 
     # convert numpy nd-array to a torch parameter (~tensor)
     id_coords = nn.Parameter(torch.from_numpy(id_coords),
-                                  requires_grad=False).cuda()
+                                  requires_grad=False)
 
     # add one dimension to coordinates
     pix_coords = torch.stack([id_coords[0].view(-1), id_coords[1].view(-1)], dim=0)
@@ -41,18 +41,18 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
 
     # init tensor with ones to be able to change the coordinates (2D) to homogenous coordinates (3D)
     ones = nn.Parameter(torch.ones(batch_size, 1, h * w),
-                        requires_grad=False).cuda()
+                        requires_grad=False)
 
     # concatinate ones to 2D points to get 3D homogenous form.
     pix_coords = nn.Parameter(torch.cat([pix_coords, ones], 1),
                                    requires_grad=False)
 
     # matrix multiplication with 3x3 (k_inv) and
-    cam_points = torch.matmul(inv_K, pix_coords).cuda() # entspricht K^1*pixel
+    cam_points = torch.matmul(inv_K, pix_coords) # entspricht K^1*pixel
 
     # convert numpy nd-array to a torch parameter (~tensor)
     normal_vec = nn.Parameter(normal,
-                             requires_grad=False).cuda().float()
+                             requires_grad=False).float()
 
     # get batch size
     batch = normal_vec.shape[0]
@@ -76,7 +76,7 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
 
     # normalization from https://codereview.stackexchange.com/questions/185785/scale-numpy-array-to-certain-range
     depth = (depth - (depth.max() + depth.min()) / 2) / (depth.max() - depth.min())
-    depth = depth * (max_depth - min_depth) + (max_depth + min_depth) / 2
+    depth = depth * (100 - 0.1) + (100 + 0.1) / 2
 
     return depth
 
@@ -94,11 +94,11 @@ def depth_to_disp(K, depth):
     batch, channel, h, w = depth.shape
 
     # init an empty 4D tensor and put it onto gpu
-    disp = torch.empty(batch, 1, h, w).cuda()
+    disp = torch.empty(batch, 1, h, w)
 
     # intrinsic matrix reduced to 3x3
-    K = K[0, 0:3, 0:3].cuda().float()
-
+    # K = K[0, 0:3, 0:3].float()
+    K = K
     # calculate focal length
     focal_length = K[1, 1] * w
 
@@ -107,5 +107,8 @@ def depth_to_disp(K, depth):
 
     for n in range(0, batch):
         disp[n, 0, :, :] = (baseline * focal_length) / (depth[n, 0, :, :] + 1e-8)
+
+    #disp = (disp - (disp.max() + disp.min()) / 2) / (disp.max() - disp.min())
+    #disp = disp * (100 - 0.1) + (100 + 0.1) / 2
 
     return disp
