@@ -177,7 +177,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         if num_channel is 4:
             # save superpixel in numpy archive
 
-            save_sup_path = Path((save_sup_path + ".npz").replace("/", "\\")).absolute()
+            save_sup_path = Path((save_sup_path + ".npz").replace("\\", "/")).absolute()
 
             print("Try to save numpy array to " + str(save_sup_path))
             # save superpixel information as uint16 in a compressed numpy archive
