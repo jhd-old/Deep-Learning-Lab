@@ -50,7 +50,7 @@ def load_superpixel_from_archive(file_path):
     return data
 
 
-def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=list(),
+def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=[],
                               img_ext='.jpg', path_insert="super_", num_channel=4):
     """
 
@@ -63,6 +63,7 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
     if superpixel_arguments is None:
         print("Using {} method with default arguments!".format(superpixel_method))
+        superpixel_arguments = []
 
     elif None in superpixel_arguments:
         print("Using {} method with wrong arguments. At least one of them was None!".format(superpixel_method))
