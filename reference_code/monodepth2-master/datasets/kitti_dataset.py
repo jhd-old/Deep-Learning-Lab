@@ -10,9 +10,10 @@ import os
 import skimage.transform
 import numpy as np
 import PIL.Image as pil
-from superpixel_utils import avg_image
+from .. kitti_utils import generate_depth_map
+from .. superpixel_utils import avg_image
 
-from kitti_utils import generate_depth_map
+
 from .mono_dataset import MonoDataset
 
 
