@@ -160,7 +160,9 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         if num_channel is 4:
             # save superpixel in numpy archive
-            np.save(save_sup_path, sup)
+
+            print("Try to save numpy array to " + str(os.path.abspath(save_sup_path)))
+            np.save(os.path.abspath(save_sup_path), sup)
 
         elif num_channel is 3 or num_channel is 6:
             # save as image
@@ -172,9 +174,15 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
             sup_img = Image.fromarray(sup_img)
 
             # save image
-            sup_img.save(save_sup_path)
+            sup_img.save(os.path.abspath(save_sup_path))
 
-        return ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
+        state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
+
+        # delete this
+        if state == ConversionState.failed_to_convert:
+            raise IOError("Superpixel couldn't be saved!")
+
+        return state
 
     else:
         return ConversionState.already_converted
