@@ -6,14 +6,12 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 import random
-import numpy as np
-import copy
-from PIL import Image  # using pillow-simd for increased speed
 
+import numpy as np
 import torch
 import torch.utils.data as data
+from PIL import Image  # using pillow-simd for increased speed
 from torchvision import transforms
 
 
@@ -38,6 +36,7 @@ class MonoDataset(data.Dataset):
         is_train
         img_ext
     """
+
     def __init__(self,
                  data_path,
                  filenames,
@@ -289,7 +288,7 @@ class MonoDataset(data.Dataset):
 
         return inputs
 
-    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None ,
+    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None,
                        img_ext='jpg'):
         raise NotImplementedError
 

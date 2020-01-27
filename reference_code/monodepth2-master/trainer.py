@@ -6,27 +6,21 @@
 
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
+import json
 import time
 
-import torch
-import torch.nn.functional as F
 import torch.optim as optim
-from torch.utils.data import DataLoader
 from tensorboardX import SummaryWriter
-from superpixel_utils import *
-import json
-
-from utils import *
-from kitti_utils import *
-from layers import *
+from torch.utils.data import DataLoader
 
 import datasets
 import networks
-from IPython import embed
-
-#import normal_to_depth as nd
+# import normal_to_depth as nd
 import normal2disp as nd
+from kitti_utils import *
+from layers import *
+from utils import *
+
 
 class Trainer:
     def __init__(self, options):
@@ -330,7 +324,7 @@ class Trainer:
 
         # changed method to Transform Normal "outputs" to former disparity outputs and return new outputs 
         outputs = self.generate_images_pred(inputs, outputs)
-        
+
         losses = self.compute_losses(inputs, outputs)
 
         return outputs, losses
@@ -419,7 +413,7 @@ class Trainer:
         Generated images are saved into the `outputs` dictionary.
         """
         ###
-        #edit by Jan
+        # edit by Jan
 
         for scale in self.opt.scales:
 
@@ -448,9 +442,9 @@ class Trainer:
             if self.opt.v1_multiscale:
                 source_scale = scale
             else:
-                 disp = F.interpolate(
+                disp = F.interpolate(
                     disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                 source_scale = 0
+                source_scale = 0
 
             # added if-statement to prevent overhead (depth would be calculated 2times)
             # if not self.opt.decoder == "normal_vector":
@@ -468,7 +462,6 @@ class Trainer:
 
                 # from the authors of https://arxiv.org/abs/1712.00175
                 if self.opt.pose_model_type == "posecnn":
-
                     axisangle = outputs[("axisangle", 0, frame_id)]
                     translation = outputs[("translation", 0, frame_id)]
 
@@ -509,7 +502,7 @@ class Trainer:
         """
 
         indices = torch.unique_consecutive(superpixel)
-        
+
         sup_loss = 0
 
         return sup_loss
@@ -634,7 +627,7 @@ class Trainer:
             # USED PER DEFAULT
             if not self.opt.disable_automasking:
                 outputs["identity_selection/{}".format(scale)] = (
-                    idxs > identity_reprojection_loss.shape[1] - 1).float()
+                        idxs > identity_reprojection_loss.shape[1] - 1).float()
 
             loss += to_optimise.mean()
 
@@ -651,7 +644,8 @@ class Trainer:
                 if self.opt.dataset == "kitti_superpixel":
 
                     superpixel = outputs[("super", 0, scale)]
-                    loss += self.opt.superpixel_smoothness*self.compute_superpixel_loss(superpixel, color)/(2 ** scale)
+                    loss += self.opt.superpixel_smoothness * self.compute_superpixel_loss(superpixel, color) / (
+                                2 ** scale)
 
                 else:
                     print("Warning: superpixel loss cant be used, because superpixel dataset isn't selected!")
@@ -699,9 +693,9 @@ class Trainer:
         samples_per_sec = self.opt.batch_size / duration
         time_sofar = time.time() - self.start_time
         training_time_left = (
-            self.num_total_steps / self.step - 1.0) * time_sofar if self.step > 0 else 0
+                                     self.num_total_steps / self.step - 1.0) * time_sofar if self.step > 0 else 0
         print_string = "epoch {:>3} | batch {:>6} | examples/s: {:5.1f}" + \
-            " | loss: {:.5f} | time elapsed: {} | time left: {}"
+                       " | loss: {:.5f} | time elapsed: {} | time left: {}"
         print(print_string.format(self.epoch, batch_idx, samples_per_sec, loss,
                                   sec_to_hm_str(time_sofar), sec_to_hm_str(training_time_left)))
 

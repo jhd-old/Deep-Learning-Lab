@@ -7,16 +7,16 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-import numpy as np
 
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 
-from layers import transformation_from_parameters
-from utils import readlines
-from options import MonodepthOptions
-from datasets import KITTIOdomDataset
 import networks
+from datasets import KITTIOdomDataset
+from layers import transformation_from_parameters
+from options import MonodepthOptions
+from utils import readlines
 
 
 # from https://github.com/tinghuiz/SfMLearner
@@ -32,7 +32,6 @@ def dump_xyz(source_to_target_transformations):
 
 # from https://github.com/tinghuiz/SfMLearner
 def compute_ate(gtruth_xyz, pred_xyz_o):
-
     # Make sure that the first matched frames align (no need for rotational alignment as
     # all the predicted/ground-truth snippets have been converted to use the same coordinate
     # system with the first frame of the snippet being the origin).

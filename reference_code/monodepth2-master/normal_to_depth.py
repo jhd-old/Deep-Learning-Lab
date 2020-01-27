@@ -2,6 +2,7 @@ import numpy as np
 import torch
 from numba import jit, prange
 
+
 ######################################################################################
 # NOT USED, currently we use the normal2disp.py
 ######################################################################################
@@ -32,7 +33,7 @@ def normal_to_depth(K_inv, normal, optimized=False):
 
         K_inv.cuda().float()
         normal.cuda()
-        #print(normal[11, :, :, :])
+        # print(normal[11, :, :, :])
         K_inv = K_inv[0, 0:3, 0:3]
 
         scale = normal.shape[0]
@@ -56,7 +57,7 @@ def normal_to_depth(K_inv, normal, optimized=False):
 
                     # get the normal values for current size and pixel
                     vec_values = normal[n, :, y, x]
-                    #print('x = ', x, 'y = ', y)
+                    # print('x = ', x, 'y = ', y)
 
                     # create 1x3 array for the current normal vector (x , y, z)
                     normal_vec = torch.tensor([vec_values[0], vec_values[1], vec_values[2]]).view(1, 3)
@@ -103,7 +104,6 @@ def optimized_loops(K_inv, d_im, normal):
     for n in prange(scale):
         for x in prange(h):
             for y in prange(w):
-
                 # pixel values need to be transposed
                 pixel = np.array([x, y, 1]).reshape((-1, 1))
 

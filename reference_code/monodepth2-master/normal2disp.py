@@ -28,7 +28,7 @@ def normal_to_depth(inv_K, normal):
 
     # convert numpy nd-array to a torch parameter (~tensor)
     id_coords = nn.Parameter(torch.from_numpy(id_coords),
-                                  requires_grad=False).cuda()
+                             requires_grad=False).cuda()
 
     # add one dimension to coordinates
     pix_coords = torch.stack([id_coords[0].view(-1), id_coords[1].view(-1)], dim=0)
@@ -45,14 +45,14 @@ def normal_to_depth(inv_K, normal):
 
     # concatinate ones to 2D points to get 3D homogenous form.
     pix_coords = nn.Parameter(torch.cat([pix_coords, ones], 1),
-                                   requires_grad=False)
+                              requires_grad=False)
 
     # matrix multiplication with 3x3 (k_inv) and
-    cam_points = torch.matmul(inv_K, pix_coords).cuda() # entspricht K^1*pixel
+    cam_points = torch.matmul(inv_K, pix_coords).cuda()  # entspricht K^1*pixel
 
     # convert numpy nd-array to a torch parameter (~tensor)
     normal_vec = nn.Parameter(normal,
-                             requires_grad=False).cuda().float()
+                              requires_grad=False).cuda().float()
 
     # get batch size
     batch = normal_vec.shape[0]

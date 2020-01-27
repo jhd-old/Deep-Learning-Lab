@@ -1,8 +1,9 @@
 from __future__ import absolute_import, division, print_function
 
 import os
-import numpy as np
 from collections import Counter
+
+import numpy as np
 
 
 def load_velodyne_points(filename):
@@ -40,7 +41,7 @@ def sub2ind(matrixSize, rowSub, colSub):
     """Convert row, col matrix subscripts to linear indices
     """
     m, n = matrixSize
-    return rowSub * (n-1) + colSub - 1
+    return rowSub * (n - 1) + colSub - 1
 
 
 def generate_depth_map(calib_dir, velo_filename, cam=2, vel_depth=False):
@@ -58,7 +59,7 @@ def generate_depth_map(calib_dir, velo_filename, cam=2, vel_depth=False):
     # compute projection matrix velodyne->image plane
     R_cam2rect = np.eye(4)
     R_cam2rect[:3, :3] = cam2cam['R_rect_00'].reshape(3, 3)
-    P_rect = cam2cam['P_rect_0'+str(cam)].reshape(3, 4)
+    P_rect = cam2cam['P_rect_0' + str(cam)].reshape(3, 4)
     P_velo2im = np.dot(np.dot(P_rect, R_cam2rect), velo2cam)
 
     # load velodyne points and remove all behind image plane (approximation)

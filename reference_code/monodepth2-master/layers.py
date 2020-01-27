@@ -7,7 +7,6 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -106,6 +105,7 @@ def rot_from_axisangle(vec):
 class ConvBlock(nn.Module):
     """Layer to perform a convolution followed by ELU
     """
+
     def __init__(self, in_channels, out_channels):
         super(ConvBlock, self).__init__()
 
@@ -121,6 +121,7 @@ class ConvBlock(nn.Module):
 class Conv3x3(nn.Module):
     """Layer to pad and convolve input
     """
+
     def __init__(self, in_channels, out_channels, use_refl=True):
         super(Conv3x3, self).__init__()
 
@@ -139,6 +140,7 @@ class Conv3x3(nn.Module):
 class BackprojectDepth(nn.Module):
     """Layer to transform a depth image into a point cloud
     """
+
     def __init__(self, batch_size, height, width):
         super(BackprojectDepth, self).__init__()
 
@@ -171,6 +173,7 @@ class BackprojectDepth(nn.Module):
 class Project3D(nn.Module):
     """Layer which projects 3D points into a camera with intrinsics K and at position T
     """
+
     def __init__(self, batch_size, height, width, eps=1e-7):
         super(Project3D, self).__init__()
 
@@ -218,12 +221,13 @@ def get_smooth_loss(disp, img):
 class SSIM(nn.Module):
     """Layer to compute the SSIM loss between a pair of images
     """
+
     def __init__(self):
         super(SSIM, self).__init__()
-        self.mu_x_pool   = nn.AvgPool2d(3, 1)
-        self.mu_y_pool   = nn.AvgPool2d(3, 1)
-        self.sig_x_pool  = nn.AvgPool2d(3, 1)
-        self.sig_y_pool  = nn.AvgPool2d(3, 1)
+        self.mu_x_pool = nn.AvgPool2d(3, 1)
+        self.mu_y_pool = nn.AvgPool2d(3, 1)
+        self.sig_x_pool = nn.AvgPool2d(3, 1)
+        self.sig_y_pool = nn.AvgPool2d(3, 1)
         self.sig_xy_pool = nn.AvgPool2d(3, 1)
 
         self.refl = nn.ReflectionPad2d(1)
@@ -238,8 +242,8 @@ class SSIM(nn.Module):
         mu_x = self.mu_x_pool(x)
         mu_y = self.mu_y_pool(y)
 
-        sigma_x  = self.sig_x_pool(x ** 2) - mu_x ** 2
-        sigma_y  = self.sig_y_pool(y ** 2) - mu_y ** 2
+        sigma_x = self.sig_x_pool(x ** 2) - mu_x ** 2
+        sigma_y = self.sig_y_pool(y ** 2) - mu_y ** 2
         sigma_xy = self.sig_xy_pool(x * y) - mu_x * mu_y
 
         SSIM_n = (2 * mu_x * mu_y + self.C1) * (2 * sigma_xy + self.C2)
@@ -254,7 +258,7 @@ def compute_depth_errors(gt, pred):
     """Computation of error metrics between predicted and ground truth depths
     """
     thresh = torch.max((gt / pred), (pred / gt))
-    a1 = (thresh < 1.25     ).float().mean()
+    a1 = (thresh < 1.25).float().mean()
     a2 = (thresh < 1.25 ** 2).float().mean()
     a3 = (thresh < 1.25 ** 3).float().mean()
 

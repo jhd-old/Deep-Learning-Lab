@@ -6,9 +6,10 @@
 
 from __future__ import absolute_import, division, print_function
 
+from collections import OrderedDict
+
 import torch
 import torch.nn as nn
-from collections import OrderedDict
 
 
 class PoseDecoder(nn.Module):

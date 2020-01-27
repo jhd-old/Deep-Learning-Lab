@@ -6,8 +6,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import os
 import argparse
+import os
 
 file_dir = os.path.dirname(__file__)  # the directory that options.py resides in
 
@@ -191,7 +191,6 @@ class MonodepthOptions:
                                  default="separate_resnet",
                                  choices=["posecnn", "separate_resnet", "shared"])
 
-
         # SYSTEM options
         self.parser.add_argument("--no_cuda",
                                  help="if set disables CUDA",
@@ -242,7 +241,7 @@ class MonodepthOptions:
                                  type=str,
                                  default="eigen",
                                  choices=[
-                                    "eigen", "eigen_benchmark", "benchmark", "odom_9", "odom_10"],
+                                     "eigen", "eigen_benchmark", "benchmark", "odom_9", "odom_10"],
                                  help="which split to run eval on")
         self.parser.add_argument("--save_pred_disps",
                                  help="if set saves predicted disparities",

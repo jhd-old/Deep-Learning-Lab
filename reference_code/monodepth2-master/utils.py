@@ -5,13 +5,12 @@
 # available in the LICENSE file.
 
 from __future__ import absolute_import, division, print_function
-import os
+
 import hashlib
+import os
 import zipfile
+
 from six.moves import urllib
-
-
-
 
 
 def readlines(filename):
@@ -83,7 +82,7 @@ def download_model_if_doesnt_exist(model_name):
         "mono+stereo_1024x320":
             ("https://storage.googleapis.com/niantic-lon-static/research/monodepth2/mono%2Bstereo_1024x320.zip",
              "cdc5fc9b23513c07d5b19235d9ef08f7"),
-        }
+    }
 
     if not os.path.exists("models"):
         os.makedirs("models")

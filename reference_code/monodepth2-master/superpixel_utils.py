@@ -1,15 +1,16 @@
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
-from enum import IntEnum
-import os
-
-from skimage.color import label2rgb
-from skimage.segmentation import felzenszwalb, slic, quickshift, watershed
-from datasets.mono_dataset import pil_loader
-from PIL import Image
-from pathlib import Path
 import multiprocessing as mp
+import os
+from enum import IntEnum
+from pathlib import Path
+
+import numpy as np
+from PIL import Image
+from skimage.color import label2rgb
+from skimage.segmentation import felzenszwalb, slic
+
+from datasets.mono_dataset import pil_loader
 
 
 def save_superpixel_in_archive(file_path, data, compressed=True):
@@ -74,8 +75,9 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     pool.join()
 
     print("Pool closed. Finished!")
-    print("Converted " + str(results.count(ConversionState.converted) + results.count(ConversionState.already_converted))
-          + "/" + str(len(results)) + " images to superpixel!")
+    print(
+        "Converted " + str(results.count(ConversionState.converted) + results.count(ConversionState.already_converted))
+        + "/" + str(len(results)) + " images to superpixel!")
     print(str(results.count(ConversionState.already_converted)) + "/" + str(len(results)) + " were already calculated.")
     print(str(results.count(ConversionState.converted)) + "/" + str(len(results)) + " have been calculated.")
     print("Failed to calculate" + str(results.count(ConversionState.failed_to_convert)) + "/" + str(len(results))
@@ -84,7 +86,6 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 
 def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
                  path_insert="super_", num_channel=4):
-
     # TODO: change this back
     # for now force to only save as 1 channel with indices
     num_channel = 4

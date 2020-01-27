@@ -7,17 +7,17 @@
 from __future__ import absolute_import, division, print_function
 
 import numpy as np
-
 import torch
 import torch.nn as nn
-import torchvision.models as models
 import torch.utils.model_zoo as model_zoo
+import torchvision.models as models
 
 
 class ResNetMultiImageInput(models.ResNet):
     """Constructs a resnet model with varying number of input images.
     Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
     """
+
     def __init__(self, block, layers, num_classes=1000, num_input_images=1):
         super(ResNetMultiImageInput, self).__init__(block, layers)
         self.inplanes = 64
@@ -97,6 +97,7 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, nu
 class ResnetEncoder(nn.Module):
     """Pytorch module for a resnet encoder
     """
+
     def __init__(self, num_layers, pretrained, num_input_images=1, num_input_channels=3):
         super(ResnetEncoder, self).__init__()
 

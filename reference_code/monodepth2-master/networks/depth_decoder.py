@@ -6,11 +6,8 @@
 
 from __future__ import absolute_import, division, print_function
 
-import numpy as np
-import torch
-import torch.nn as nn
-
 from collections import OrderedDict
+
 from layers import *
 
 
@@ -99,7 +96,7 @@ class NormalDecoder(nn.Module):
         self.decoder = nn.ModuleList(list(self.convs.values()))
 
         # no need for activation function here, because we wont activate (need to work with normal values)
-        #self.sigmoid = nn.Sigmoid()
+        # self.sigmoid = nn.Sigmoid()
 
     def forward(self, input_features):
         self.outputs = {}
