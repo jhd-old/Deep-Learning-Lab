@@ -191,7 +191,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         # delete this
         if state == ConversionState.failed_to_convert:
-            raise IOError("Superpixel couldn't be saved!")
+            raise IOError("Superpixel couldn't be saved at the following path: " + str(os.path.abspath(save_sup_path)))
 
         return state
 
