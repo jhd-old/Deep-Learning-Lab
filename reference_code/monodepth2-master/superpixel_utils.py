@@ -194,10 +194,23 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         if num_channel is 4:
             val = np.load(save_sup_path)
 
+            print("Loaded following data: ", val.shape)
             if val is None:
                 state = ConversionState.failed_to_convert
             else:
                 state = ConversionState.converted
+
+            del val
+
+        elif num_channel is 3 or num_channel is 6:
+            val = pil_loader(save_sup_path)
+
+            if val is None:
+                state = ConversionState.failed_to_convert
+            else:
+                state = ConversionState.converted
+
+            del val
 
         if state == ConversionState.failed_to_convert:
             raise IOError("Superpixel couldn't be saved at the following path: " + str(save_sup_path))
