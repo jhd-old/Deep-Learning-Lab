@@ -18,6 +18,7 @@ import networks
 # import normal_to_depth as nd
 import normal2disp as nd
 from kitti_utils import *
+from superpixel_utils import convert_rgb_to_superpixel
 from layers import *
 from utils import *
 
@@ -147,14 +148,12 @@ class Trainer:
             print("Using {} channel input.".format(num_sup_channels))
 
             print("Start converting training images to superpixel.")
-            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
-                                                       self.opt.superpixel_arguments, img_ext=img_ext,
-                                                       num_channel=num_sup_channels)
+            convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                                      self.opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
 
             print("Start converting validation images to superpixel.")
-            superpixel_utils.convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
-                                                       self.opt.superpixel_arguments, img_ext=img_ext,
-                                                       num_channel=num_sup_channels)
+            convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                                      self.opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
         else:
             use_superpixel = False
 
