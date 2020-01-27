@@ -58,11 +58,12 @@ class Trainer:
         self.models["encoder"].to(self.device)
         self.parameters_to_train += list(self.models["encoder"].parameters())
 
-        if self.opt.decoder == "standard":
-            self.models["depth"] = networks.DepthDecoder(
-                self.models["encoder"].num_ch_enc, self.opt.scales)
-        elif self.opt.decoder == "normal_vector":
+        if self.opt.decoder == "normal_vector":
             self.models["depth"] = networks.NormalDecoder(
+                self.models["encoder"].num_ch_enc, self.opt.scales)
+        else:
+            # use standard monodepth2 depth decoder
+            self.models["depth"] = networks.DepthDecoder(
                 self.models["encoder"].num_ch_enc, self.opt.scales)
 
         self.models["depth"].to(self.device)
