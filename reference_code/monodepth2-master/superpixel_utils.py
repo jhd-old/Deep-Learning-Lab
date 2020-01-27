@@ -191,7 +191,14 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 
-        # delete this
+        if num_channel is 4:
+            val = np.load(save_sup_path)
+
+            if val is None:
+                state = ConversionState.failed_to_convert
+            else:
+                state = ConversionState.converted
+
         if state == ConversionState.failed_to_convert:
             raise IOError("Superpixel couldn't be saved at the following path: " + str(save_sup_path))
 
