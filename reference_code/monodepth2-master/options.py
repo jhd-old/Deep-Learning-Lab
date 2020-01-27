@@ -42,6 +42,12 @@ class MonodepthOptions:
                                  default=3)
 
         # SUPERPIXEL options
+        self.parser.add_argument("--dataset",
+                                 type=str,
+                                 help="dataset to train on",
+                                 default="kitti",
+                                 choices=["kitti", "kitti_odom", "kitti_depth", "kitti_test", "kitti_superpixel"])
+
         # choose superpixel method
         # currently only fz and slic are implemented
         self.parser.add_argument("--superpixel_method",
@@ -100,11 +106,6 @@ class MonodepthOptions:
                                  help="number of resnet layers",
                                  default=18,
                                  choices=[18, 34, 50, 101, 152])
-        self.parser.add_argument("--dataset",
-                                 type=str,
-                                 help="dataset to train on",
-                                 default="kitti",
-                                 choices=["kitti", "kitti_odom", "kitti_depth", "kitti_test", "kitti_superpixel"])
         self.parser.add_argument("--png",
                                  help="if set, trains from raw KITTI png files (instead of jpgs)",
                                  action="store_true")
