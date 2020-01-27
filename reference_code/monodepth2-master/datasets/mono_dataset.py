@@ -196,7 +196,8 @@ class MonoDataset(data.Dataset):
                     inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index, other_side, do_flip, img=color,
                                                                    channel=sup_channel,
                                                                    method=self.opt.superpixel_method,
-                                                                   arguments=self.opt.superpixel_arguments)
+                                                                   arguments=self.opt.superpixel_arguments,
+                                                                   img_ext=self.img_ext)
 
                     if self.opt.input_channels is not 3:
                         # dont add color when we only want to use superpixel
@@ -223,7 +224,8 @@ class MonoDataset(data.Dataset):
                     inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index + 1, side, do_flip, img=color,
                                                                    channel=sup_channel,
                                                                    method=self.opt.superpixel_method,
-                                                                   arguments=self.opt.superpixel_arguments)
+                                                                   arguments=self.opt.superpixel_arguments,
+                                                                   img_ext=self.img_ext)
 
                     if self.opt.input_channels is not 3:
                         # if num input channels is 3 and superpixels should be used, dont load normal image
@@ -287,7 +289,8 @@ class MonoDataset(data.Dataset):
 
         return inputs
 
-    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None):
+    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None ,
+                       img_ext='jpg'):
         raise NotImplementedError
 
     def get_color(self, folder, frame_index, side, do_flip):

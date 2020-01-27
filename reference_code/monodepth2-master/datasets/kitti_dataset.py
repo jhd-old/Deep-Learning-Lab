@@ -94,7 +94,8 @@ class SuperpixelDataset(KITTIDataset):
             self.data_path, folder, "image_0{}/data".format(self.side_map[side]), f_str)
         return image_path
 
-    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None):
+    def get_superpixel(self, folder, frame_index, side, do_flip, img=None, channel=1, method="fz", arguments=None,
+                       img_ext='jpg'):
 
         # so superpixel is always saved as 1 channel
         # --> load numpy array with superpixel inidices as data

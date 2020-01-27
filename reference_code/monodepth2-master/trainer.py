@@ -508,6 +508,8 @@ class Trainer:
         :TODO: finish implementation
         """
 
+        indices = torch.unique_consecutive(superpixel)
+        
         sup_loss = 0
 
         return sup_loss
