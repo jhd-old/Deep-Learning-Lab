@@ -61,9 +61,15 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
     :return:
     """
 
-    print("Using {} method with {}, {}, {} as arguments!".format(superpixel_method, superpixel_arguments[0],
-                                                                 superpixel_arguments[1],
-                                                                 superpixel_arguments[2]))
+    if len(superpixel_arguments) is 3:
+        print("Using {} method with {}, {}, {} as arguments!".format(superpixel_method, superpixel_arguments[0],
+                                                                     superpixel_arguments[1],
+                                                                     superpixel_arguments[2]))
+    elif superpixel_arguments is None:
+        print("Using {} method with default arguments!".format(superpixel_method))
+
+    else:
+        raise NotImplementedError("Length of given superpixel arguments is not implemented!")
     pool = mp.Pool(mp.cpu_count())
 
     print("Starting multiprocessing pool on " + str(mp.cpu_count()) + " kernels.")
