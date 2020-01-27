@@ -165,6 +165,8 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # convert image to numpy
         img = np.array(img)
 
+        print("Image shape", img.shape)
+
         # calculate superpixel
         sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
 
