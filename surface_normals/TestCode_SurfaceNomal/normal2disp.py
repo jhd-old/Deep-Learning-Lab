@@ -74,6 +74,10 @@ def normal_to_depth(inv_K, normal):
     # unstack to retrieve one depth matrix per batch (batch size, 1, h, w)
     depth = depth.view(batch_size, 1, h, w)
 
+    # normalization from https://codereview.stackexchange.com/questions/185785/scale-numpy-array-to-certain-range
+    depth = (depth - (depth.max() + depth.min()) / 2) / (depth.max() - depth.min())
+    depth = depth * (100 - 0.1) + (100 + 0.1) / 2
+
     return depth
 
 
@@ -103,5 +107,8 @@ def depth_to_disp(K, depth):
 
     for n in range(0, batch):
         disp[n, 0, :, :] = (baseline * focal_length) / (depth[n, 0, :, :] + 1e-8)
+
+    #disp = (disp - (disp.max() + disp.min()) / 2) / (disp.max() - disp.min())
+    #disp = disp * (100 - 0.1) + (100 + 0.1) / 2
 
     return disp

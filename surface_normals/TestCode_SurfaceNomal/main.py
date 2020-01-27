@@ -25,7 +25,7 @@ if __name__ == "__main__":
     disp = normal_to_depth.depth_to_disp(K, depth)
 
     cv2.imwrite("normal2depth.png", depth * 10255)
-    cv2.imwrite("normal2disp.png", disp * 10255)
+    cv2.imwrite("normal2disp.png", disp / 1838292 *2)
 
     ######################
     # NEW CODE
@@ -60,5 +60,5 @@ if __name__ == "__main__":
     new_disp = new_disp.numpy()
 
     # save the image to a file
-    cv2.imwrite("normal2depth_fastFunction.png", new_depth * 10255)
-    cv2.imwrite("normal2disp_fastFunction.png", new_disp * 10255)
+    cv2.imwrite("normal2depth_fastFunction.png", new_depth * 10)
+    cv2.imwrite("normal2disp_fastFunction.png", new_disp / 255)
