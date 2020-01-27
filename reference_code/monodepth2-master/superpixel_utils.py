@@ -132,6 +132,8 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         superpixel_ident = str(superpixel_method)
 
         for a in superpixel_arguments:
+            # replace . with _
+            a = a.replace(".", "_")
             superpixel_ident += str(a)
 
         save_sup_path += superpixel_ident
@@ -165,6 +167,8 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
         # calculate superpixel
         sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+
+        print("Calculated shape")
 
         # create directory to be save
         Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)

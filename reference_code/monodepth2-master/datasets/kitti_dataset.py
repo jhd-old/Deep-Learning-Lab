@@ -107,6 +107,9 @@ class SuperpixelDataset(KITTIDataset):
         superpixel_ident = str(method)
 
         for a in arguments:
+            # replace . with _
+            a = a.replace(".", "_")
+
             superpixel_ident += str(a)
 
         path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npy"))
