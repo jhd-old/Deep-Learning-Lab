@@ -165,15 +165,11 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # convert image to numpy
         img = np.array(img)
 
-        print("Image shape", img.shape)
-
         # calculate superpixel
         sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
 
-        # force superpixel to be 16bit integer
+        # force superpixel to be unsigned 16bit integer
         sup = sup.astype(np.uint16)
-
-        print("Calculated shape", sup.shape)
 
         # create directory to be save
         Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
@@ -181,9 +177,10 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         if num_channel is 4:
             # save superpixel in numpy archive
 
-            save_sup_path = (save_sup_path + ".npz").replace("/", "\\")
+            save_sup_path = Path((save_sup_path + ".npz").replace("/", "\\"))
 
             print("Try to save numpy array to " + str(save_sup_path))
+            # save superpixel information as uint16 in a compressed numpy archive
             np.savez_compressed(save_sup_path, x=sup)
 
         elif num_channel is 3 or num_channel is 6:
