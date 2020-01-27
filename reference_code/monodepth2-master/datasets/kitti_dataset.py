@@ -112,8 +112,10 @@ class SuperpixelDataset(KITTIDataset):
 
             superpixel_ident += a
 
-        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npy"))
-        superpixel = np.load(path).astype(np.float32)
+        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npz"))
+
+        # saved superpixel for key "x"
+        superpixel = np.load(path)["x"].astype(np.uint16)
 
         if channel is 3:
             superpixel = avg_image(img, superpixel)

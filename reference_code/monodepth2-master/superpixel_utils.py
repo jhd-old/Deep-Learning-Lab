@@ -125,7 +125,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # save superpixel to same folder
         save_sup_path = img_path
 
-        # change file type to none, numpy will add .npy automatically
+        # change file type to none, numpy will add .npz automatically
         save_sup_path = save_sup_path.replace(img_ext, "")
 
         # add identifier for superpixel method and arguments
@@ -170,6 +170,9 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # calculate superpixel
         sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
 
+        # force superpixel to be 16bit integer
+        sup = sup.astype(np.uint16)
+
         print("Calculated shape", sup.shape)
 
         # create directory to be save
@@ -178,10 +181,10 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         if num_channel is 4:
             # save superpixel in numpy archive
 
-            save_sup_path = (save_sup_path + ".npy").replace("/", "\\")
+            save_sup_path = (save_sup_path + ".npz").replace("/", "\\")
 
             print("Try to save numpy array to " + str(save_sup_path))
-            np.save(save_sup_path, sup)
+            np.savez_compressed(save_sup_path, x=sup)
 
         elif num_channel is 3 or num_channel is 6:
             # save as image
@@ -198,7 +201,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 
         if num_channel is 4:
-            val = np.load(save_sup_path)
+            val = np.load(save_sup_path)["x"].astype(np.uint16)
 
             print("Loaded following data: ", val.shape)
             if val is None:
