@@ -16,6 +16,7 @@ from torch.utils.data import DataLoader
 import datasets
 import networks
 # import normal_to_depth as nd
+from layers import disp_to_depth
 import normal2disp as nd
 from kitti_utils import *
 from superpixel_utils import convert_rgb_to_superpixel
@@ -425,40 +426,24 @@ class Trainer:
 
                 K_inv = inputs[("inv_K", scale)]
 
-                disp, depth = nd.normal_to_depth(K_inv, normal_vec, self.opt.min_depth, self.opt.max_depth)
-                #print("new depth tensor shape", depth.shape)
+                disp = nd.normal_to_disp(K_inv, normal_vec)
 
-                #disp = nd.depth_to_disp(K, depth)
-
-                # add disparity entry in dictionary
                 outputs[("disp", scale)] = disp
 
             else:
                 disp = outputs[("disp", scale)]
-                depth = None
 
-            # added if-statement to prevent overhead (depth would be calculated 2times)
-            if not self.opt.decoder == "normal_vector":
-                if self.opt.v1_multiscale:
-                    source_scale = scale
-                else:
-                    disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+            if self.opt.v1_multiscale:
 
-                    source_scale = 0
+                source_scale = scale
 
-                _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
-
-                outputs[("depth", 0, scale)] = depth
             else:
-                if self.opt.v1_multiscale:
-                    source_scale = scale
-                else:
-                    depth = F.interpolate(depth, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                    disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                    outputs[("disp", 0, scale)] = disp
-                    source_scale = 0
+                disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
 
-                outputs[("depth", 0, scale)] = depth
+                source_scale = 0
+
+            _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
+            outputs[("depth", 0, scale)] = depth
 
             for i, frame_id in enumerate(self.opt.frame_ids[1:]):
 

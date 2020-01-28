@@ -150,10 +150,12 @@ def evaluate(opt):
 
                     normal_vec = output[("normal_vec", 0)]
 
-                    depth = nd.normal_to_depth(K_inv, normal_vec, opt.min_depth, opt.max_depth)
+                    #depth = nd.normal_to_depth(K_inv, normal_vec, opt.min_depth, opt.max_depth)
+
+                    disp = nd.normal_to_disp(K_inv, normal_vec)
                     # print("new depth tensor shape", depth.shape)
 
-                    output[("disp", 0)] = nd.depth_to_disp(K, depth)
+                    output[("disp", 0)] = disp
 
                     # scaling of disp to min_depth to max_depth
                     pred_disp, _ = disp_to_depth(output[("disp", 0)], opt.min_depth, opt.max_depth)

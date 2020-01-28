@@ -3,6 +3,58 @@ import torch
 from layers import disp_to_depth
 
 
+def normal_to_disp(inv_K, normal):
+    batch_size = normal.shape[0]
+    h = normal.shape[2]
+    w = normal.shape[3]
+
+    inv_K = inv_K[0, 0:3, 0:3].cuda().float()
+
+    # init meshgrid for image height and width
+    meshgrid = np.meshgrid(range(w), range(h), indexing='xy')
+
+    # use numpy stack to create an ndarray out of the meshgrid
+    id_coords = np.stack(meshgrid, axis=0).astype(np.float32)
+
+    # convert numpy nd-array to a torch parameter (~tensor)
+    id_coords = torch.tensor(torch.from_numpy(id_coords), requires_grad=False).cuda()
+
+    # add one dimension to coordinates
+    pix_coords = torch.stack([id_coords[0].view(-1), id_coords[1].view(-1)], dim=0)
+
+    # unsqueeze of 1xn or nx1 tensor basically just changes there orientation
+    pix_coords = torch.unsqueeze(pix_coords, 0)
+
+    # repeat pixel coordinates for every batch size.
+    pix_coords = pix_coords.repeat(batch_size, 1, 1)
+
+    # init tensor with ones to be able to change the coordinates (2D) to homogenous coordinates (3D)
+    ones = torch.ones((batch_size, 1, h * w), requires_grad=False).cuda()
+
+    # concatinate ones to 2D points to get 3D homogenous form.
+    pix_coords = torch.tensor(torch.cat([pix_coords, ones], 1), requires_grad=False)
+
+    # matrix multiplication with 3x3 (k_inv) and
+    cam_points = torch.matmul(inv_K, pix_coords).cuda()  # equals K^1*pixel
+
+    # convert numpy nd-array to a torch parameter (~tensor)
+    normal_vec = torch.tensor(normal, requires_grad=False).cuda().float()
+
+    # get batch size
+    batch = normal_vec.shape[0]
+
+    # do some magic
+    normal_vectors = torch.stack([normal_vec[:, 0].view(batch, -1), normal_vec[:, 1].view(batch, -1),
+                                  normal_vec[:, 2].view(batch, -1)], dim=1)
+
+    # do dot product by multiplication of both matrices (x_r=x*x', y_r=y*y', z_r=z*z') and sum (d=x_r+y_r+z_r)
+    # IMPORTANT: ASSUME HERE THAT DISPARITY is this value
+    # TODO: check if will still want to use this
+    disp = (normal_vectors * cam_points).sum(1)
+
+    return disp
+
+
 def normal_to_depth(inv_K, normal, min_depth, max_depth):
     """
     Converts normal vectors to depth.
@@ -64,14 +116,11 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     disp = (normal_vectors * cam_points).sum(1)
 
     # normalize disparity
-    # scaled_disp = scale_min_max(disp, out_range=(min_depth, max_depth))
+    normalized_disp = scale_min_max(disp, out_range=(min_depth, max_depth))
 
     # depth = 1 / values
     # matrix**(-1) should solve this
-    # depth = normalized_disp.pow(-1)
-
-    # use the way they did it
-    scaled_disp, depth = disp_to_depth(disp, min_depth, max_depth)
+    depth = normalized_disp.pow(-1)
 
     # add dimension one to change (batch size, h*w) to (batch size, 1, h*w)
     depth = torch.unsqueeze(depth, dim=1)
@@ -79,7 +128,7 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     # unstack to retrieve one depth matrix per batch (batch size, 1, h, w)
     depth = depth.view(batch_size, 1, h, w)
 
-    return depth, disp
+    return depth
 
 
 def scale_min_max(arr, out_range=(-1, 1), axis=None):
