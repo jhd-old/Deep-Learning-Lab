@@ -3,7 +3,7 @@ import torch
 from layers import disp_to_depth
 
 
-def normal_to_disp(inv_K, normal):
+def normals_to_disp(inv_K, normal):
     batch_size = normal.shape[0]
     h = normal.shape[2]
     w = normal.shape[3]

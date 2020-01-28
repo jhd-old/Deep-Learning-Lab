@@ -22,6 +22,7 @@ from kitti_utils import *
 from superpixel_utils import convert_rgb_to_superpixel
 from layers import *
 from utils import *
+from skimage.segmentation import find_boundaries
 
 
 class Trainer:
@@ -426,7 +427,7 @@ class Trainer:
 
                 K_inv = inputs[("inv_K", scale)]
 
-                disp = nd.normal_to_disp(K_inv, normal_vec)
+                disp = nd.normals_to_disp(K_inv, normal_vec)
 
                 outputs[("disp", scale)] = disp
 
@@ -496,6 +497,14 @@ class Trainer:
         indices = torch.unique_consecutive(superpixel)
 
         # gradient indices
+
+        # indices = indices.detach().numpy()
+
+        # subpixel would be possible too. Would return double sized image.
+        # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
+        boundaries = find_boundaries(superpixel, mode='outer')
+
+        boundaries = torch.tensor()
 
         #
         sup_loss = 0
