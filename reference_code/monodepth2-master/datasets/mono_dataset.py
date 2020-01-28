@@ -116,16 +116,31 @@ class MonoDataset(data.Dataset):
         :param inputs:
         """
 
+        # first scale superpixel labels
         for k in list(inputs):
             frame = inputs[k]
-            if "super" in k:
+            if "super_img" in k:
                 n, im, i = k
                 for i in range(self.num_scales):
                     inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
 
         for k in list(inputs):
             f = inputs[k]
-            if "super" in k:
+            if "super_img" in k:
+                n, im, i = k
+                inputs[(n, im, i)] = self.to_tensor(f)
+
+        # second scale superpixel images
+        for k in list(inputs):
+            frame = inputs[k]
+            if "super_img" in k:
+                n, im, i = k
+                for i in range(self.num_scales):
+                    inputs[(n, im, i)] = self.resize[i](inputs[(n, im, i - 1)])
+
+        for k in list(inputs):
+            f = inputs[k]
+            if "super_img" in k:
                 n, im, i = k
                 inputs[(n, im, i)] = self.to_tensor(f)
 
@@ -192,11 +207,14 @@ class MonoDataset(data.Dataset):
                     else:
                         raise NotImplementedError
 
-                    inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index, other_side, do_flip, img=color,
+                    super_label, super_img = self.get_superpixel(folder, frame_index, other_side, do_flip, img=color,
                                                                    channel=sup_channel,
                                                                    method=self.opt.superpixel_method,
                                                                    arguments=self.opt.superpixel_arguments,
                                                                    img_ext=self.img_ext)
+
+                    inputs[("super_label", i, -1)] = super_label
+                    inputs[("super_img", i, -1)] = super_img
 
                     if self.opt.input_channels is not 3:
                         # dont add color when we only want to use superpixel
@@ -220,11 +238,14 @@ class MonoDataset(data.Dataset):
                     else:
                         raise NotImplementedError
 
-                    inputs[("super", i, -1)] = self.get_superpixel(folder, frame_index + 1, side, do_flip, img=color,
+                    super_label, super_img = self.get_superpixel(folder, frame_index + 1, side, do_flip, img=color,
                                                                    channel=sup_channel,
                                                                    method=self.opt.superpixel_method,
                                                                    arguments=self.opt.superpixel_arguments,
                                                                    img_ext=self.img_ext)
+
+                    inputs[("super_label", i, -1)] = super_label
+                    inputs[("super_img", i, -1)] = super_img
 
                     if self.opt.input_channels is not 3:
                         # if num input channels is 3 and superpixels should be used, dont load normal image
@@ -264,7 +285,10 @@ class MonoDataset(data.Dataset):
         for i in self.frame_idxs:
 
             if self.use_superpixel:
-                del inputs[("super", i, -1)]
+                del inputs[("super_label", i, -1)]
+
+                if "super_img" in inputs.keys():
+                    del inputs[("super_img", i, -1)]
 
                 if self.opt.input_channels is not 3:
                     del inputs[("color", i, -1)]

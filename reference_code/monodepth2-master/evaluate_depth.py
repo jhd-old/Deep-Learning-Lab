@@ -121,10 +121,16 @@ def evaluate(opt):
 
                 if opt.dataset == "kitti_superpixel":
                     if opt.input_channels is 3:
-                        input_color = data[("super", 0, 0)].cuda()
-                    elif opt.input_channels is 4 or opt.input_channels is 6:
+                        input_color = data[("super_img", 0, 0)].cuda()
+
+                    elif opt.input_channels is 4:
                         color = data[("color", 0, 0)].cuda()
-                        superpixel = data[("super", 0, 0)].cuda()
+                        superpixel = data[("super_label", 0, 0)].cuda()
+                        input_color = torch.cat((color, superpixel), dim=0)
+
+                    elif opt.input_channels is 6:
+                        color = data[("color", 0, 0)].cuda()
+                        superpixel = data[("super_img", 0, 0)].cuda()
                         input_color = torch.cat((color, superpixel), dim=0)
                     else:
                         raise NotImplementedError("given input channel size is not implemented.")

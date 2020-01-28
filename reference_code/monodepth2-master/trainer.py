@@ -292,17 +292,17 @@ class Trainer:
                     # use four channel encoder
                     # concat superpixel to the image
                     image = inputs["color_aug", 0, 0]
-                    superpixel = inputs["super", 0, 0]
+                    superpixel = inputs["super_label", 0, 0]
                     inp = torch.cat((image, superpixel), dim=0)
 
                 elif self.opt.input_channels is 3:
                     # use only superpixel 3 channel input
-                    inp = inputs["super", 0, 0]
+                    inp = inputs["super_img", 0, 0]
 
                 elif self.opt.input_channels is 6:
                     # use 3 channel superpixel and 3 channel standard rgb image
                     image = inputs["color_aug", 0, 0]
-                    superpixel = inputs["super", 0, 0]
+                    superpixel = inputs["super_img", 0, 0]
                     inp = torch.cat((image, superpixel), dim=0)
 
                 else:
@@ -646,7 +646,7 @@ class Trainer:
                 # need to be sure that superpixel dataset is used
                 if self.opt.dataset == "kitti_superpixel":
 
-                    superpixel = outputs[("super", 0, scale)]
+                    superpixel = outputs[("super_label", 0, scale)]
                     loss += self.opt.superpixel_smoothness * self.compute_superpixel_loss(superpixel, color) / (
                                 2 ** scale)
 

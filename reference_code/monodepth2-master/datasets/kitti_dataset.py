@@ -118,15 +118,17 @@ class SuperpixelDataset(KITTIDataset):
         path = PurePath(path.replace("/", "\\")).as_posix()
 
         # saved superpixel for key "x"
-        superpixel = np.load(path)["x"].astype(np.uint16)
+        super_label = np.load(path)["x"].astype(np.uint16)
 
-        if channel is 3:
-            superpixel = avg_image(img, superpixel)
+        if channel is 3 or channel is 6:
+            super_img = avg_image(img, super_label)
+        else:
+            super_img = None
 
         if do_flip:
-            superpixel = np.fliplr(superpixel)
+            super_label = np.fliplr(super_label)
 
-        return superpixel
+        return super_label, super_img
 
     def get_depth(self, folder, frame_index, side, do_flip):
         calib_path = os.path.join(self.data_path, folder.split("/")[0])
