@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import multiprocessing as mp
 import os
 from enum import IntEnum
-from pathlib import Path
+from pathlib import PurePath
 
 import numpy as np
 from PIL import Image
@@ -172,16 +172,18 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         sup = sup.astype(np.uint16)
 
         # create directory to be save
-        Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
+        parent_folder = PurePath(save_sup_path).parent
+        parent_folder.mkdir(parents=True, exist_ok=True)
+        print("Parent folder", str(parent_folder))
 
         if num_channel is 4:
             # save superpixel in numpy archive
 
-            save_sup_path = Path((save_sup_path + ".npz").replace("/", "\\"))
+            save_sup_path = PurePath((save_sup_path + ".npz").replace("/", "\\")).as_posix()
 
-            print("Try to save numpy array to " + str(save_sup_path[1:]))
+            print("Try to save numpy array to " + str(save_sup_path))
             # save superpixel information as uint16 in a compressed numpy archive
-            np.savez_compressed(save_sup_path[1:], x=sup)
+            np.savez_compressed(save_sup_path, x=sup)
 
         elif num_channel is 3 or num_channel is 6:
             # save as image
