@@ -11,7 +11,7 @@ import os
 import PIL.Image as pil
 import numpy as np
 import skimage.transform
-
+from pathlib import PurePath, Path
 from kitti_utils import generate_depth_map
 from superpixel_utils import avg_image
 from .mono_dataset import MonoDataset
@@ -113,6 +113,9 @@ class SuperpixelDataset(KITTIDataset):
             superpixel_ident += a
 
         path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npz"))
+
+        # pure path will use unix or windows correct path depending on detected system
+        path = PurePath(path.replace("/", "\\")).as_posix()
 
         # saved superpixel for key "x"
         superpixel = np.load(path)["x"].astype(np.uint16)

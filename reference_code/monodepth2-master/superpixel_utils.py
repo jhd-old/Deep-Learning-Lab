@@ -172,14 +172,13 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         sup = sup.astype(np.uint16)
 
         # create directory to be save
-        parent_folder = Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
+        Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
 
         if num_channel is 4:
             # save superpixel in numpy archive
 
             save_sup_path = PurePath((save_sup_path + ".npz").replace("/", "\\")).as_posix()
 
-            print("Try to save numpy array to " + str(save_sup_path))
             # save superpixel information as uint16 in a compressed numpy archive
             np.savez_compressed(save_sup_path, x=sup)
 
@@ -200,7 +199,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         if num_channel is 4:
             val = np.load(save_sup_path)["x"].astype(np.uint16)
 
-            print("Loaded following data: ", val.shape)
             if val is None:
                 state = ConversionState.failed_to_convert
             else:
