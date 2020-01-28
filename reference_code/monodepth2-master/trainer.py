@@ -423,31 +423,28 @@ class Trainer:
                 # tranform normals to depth to disp
                 normal_vec = outputs[("normal_vec", scale)]
 
-                K = inputs[("K", scale)]
                 K_inv = inputs[("inv_K", scale)]
 
-                depth = nd.normal_to_depth(K_inv, normal_vec, self.opt.min_depth, self.opt.max_depth)
+                disp, depth = nd.normal_to_depth(K_inv, normal_vec, self.opt.min_depth, self.opt.max_depth)
                 #print("new depth tensor shape", depth.shape)
 
-                disp = nd.depth_to_disp(K, depth)
+                #disp = nd.depth_to_disp(K, depth)
 
                 # add disparity entry in dictionary
                 outputs[("disp", scale)] = disp
-                disp = outputs[("disp", scale)]
-                # outputs[("depth", 0, scale)] = depth
-                # source_scale = scale
 
             else:
                 disp = outputs[("disp", scale)]
+                depth = None
 
             # added if-statement to prevent overhead (depth would be calculated 2times)
             if not self.opt.decoder == "normal_vector":
                 if self.opt.v1_multiscale:
                     source_scale = scale
                 else:
-                     disp = F.interpolate(
-                         disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                     source_scale = 0
+                    disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+
+                    source_scale = 0
 
                 _, depth = disp_to_depth(disp, self.opt.min_depth, self.opt.max_depth)
 
@@ -456,15 +453,12 @@ class Trainer:
                 if self.opt.v1_multiscale:
                     source_scale = scale
                 else:
-                     depth = F.interpolate(
-                         depth, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                     disp = F.interpolate(
-                         disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
-                     outputs[("disp", 0, scale)] = disp
-                     source_scale = 0
+                    depth = F.interpolate(depth, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+                    disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+                    outputs[("disp", 0, scale)] = disp
+                    source_scale = 0
 
                 outputs[("depth", 0, scale)] = depth
-
 
             for i, frame_id in enumerate(self.opt.frame_ids[1:]):
 

@@ -1,6 +1,6 @@
 import numpy as np
 import torch
-from torch import nn
+from layers import disp_to_depth
 
 
 def normal_to_depth(inv_K, normal, min_depth, max_depth):
@@ -9,9 +9,10 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
 
     :param K_inv: inverted intrinsic matrix (Torch tensor)
     :param normal: normals vector (Torch tensor)
+    :param min_depth: minimum range for normalization
+    :param max_depth: maximum range for normalization
     :return: depth matrix
     :rtype: Torch tensor
-    :todo: continue implementing and change to use this method in trainer.py
     """
 
     batch_size = normal.shape[0]
@@ -27,8 +28,7 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     id_coords = np.stack(meshgrid, axis=0).astype(np.float32)
 
     # convert numpy nd-array to a torch parameter (~tensor)
-    id_coords = nn.Parameter(torch.from_numpy(id_coords),
-                             requires_grad=False).cuda()
+    id_coords = torch.tensor(torch.from_numpy(id_coords), requires_grad=False).cuda()
 
     # add one dimension to coordinates
     pix_coords = torch.stack([id_coords[0].view(-1), id_coords[1].view(-1)], dim=0)
@@ -40,19 +40,16 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     pix_coords = pix_coords.repeat(batch_size, 1, 1)
 
     # init tensor with ones to be able to change the coordinates (2D) to homogenous coordinates (3D)
-    ones = nn.Parameter(torch.ones(batch_size, 1, h * w),
-                        requires_grad=False).cuda()
+    ones = torch.ones((batch_size, 1, h * w), requires_grad=False).cuda()
 
     # concatinate ones to 2D points to get 3D homogenous form.
-    pix_coords = nn.Parameter(torch.cat([pix_coords, ones], 1),
-                              requires_grad=False)
+    pix_coords = torch.tensor(torch.cat([pix_coords, ones], 1), requires_grad=False)
 
     # matrix multiplication with 3x3 (k_inv) and
-    cam_points = torch.matmul(inv_K, pix_coords).cuda()  # entspricht K^1*pixel
+    cam_points = torch.matmul(inv_K, pix_coords).cuda()  # equals K^1*pixel
 
     # convert numpy nd-array to a torch parameter (~tensor)
-    normal_vec = nn.Parameter(normal,
-                              requires_grad=False).cuda().float()
+    normal_vec = torch.tensor(normal, requires_grad=False).cuda().float()
 
     # get batch size
     batch = normal_vec.shape[0]
@@ -62,11 +59,19 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
                                   normal_vec[:, 2].view(batch, -1)], dim=1)
 
     # do dot product by multiplication of both matrices (x_r=x*x', y_r=y*y', z_r=z*z') and sum (d=x_r+y_r+z_r)
-    depth = (normal_vectors * cam_points).sum(1)
+    # IMPORTANT: ASSUME HERE THAT DISPARITY is this value
+    # TODO: check if will still want to use this
+    disp = (normal_vectors * cam_points).sum(1)
+
+    # normalize disparity
+    # scaled_disp = scale_min_max(disp, out_range=(min_depth, max_depth))
 
     # depth = 1 / values
     # matrix**(-1) should solve this
-    depth = depth.pow(-1)
+    # depth = normalized_disp.pow(-1)
+
+    # use the way they did it
+    scaled_disp, depth = disp_to_depth(disp, min_depth, max_depth)
 
     # add dimension one to change (batch size, h*w) to (batch size, 1, h*w)
     depth = torch.unsqueeze(depth, dim=1)
@@ -74,11 +79,23 @@ def normal_to_depth(inv_K, normal, min_depth, max_depth):
     # unstack to retrieve one depth matrix per batch (batch size, 1, h, w)
     depth = depth.view(batch_size, 1, h, w)
 
-    # normalization from https://codereview.stackexchange.com/questions/185785/scale-numpy-array-to-certain-range
-    depth = (depth - (depth.max() + depth.min()) / 2) / (depth.max() - depth.min())
-    depth = depth * (max_depth - min_depth) + (max_depth + min_depth) / 2
+    return depth, disp
 
-    return depth
+
+def scale_min_max(arr, out_range=(-1, 1), axis=None):
+    """
+    Normalize arr or matrix between given range.
+    normalization from https://codereview.stackexchange.com/questions/185785/scale-numpy-array-to-certain-range
+
+    :param arr: array or matrix to normalize
+    :param out_range: range to use for min and max values
+    :param axis: axis to normalize on
+    :return: in given range scaled arr/matrix
+    """
+
+    domain = np.min(arr, axis), np.max(arr, axis)
+    y = (arr - (domain[1] + domain[0]) / 2) / (domain[1] - domain[0])
+    return y * (out_range[1] - out_range[0]) + (out_range[1] + out_range[0]) / 2
 
 
 def depth_to_disp(K, depth):

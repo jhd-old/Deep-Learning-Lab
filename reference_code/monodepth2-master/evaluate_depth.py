@@ -150,7 +150,7 @@ def evaluate(opt):
 
                     normal_vec = output[("normal_vec", 0)]
 
-                    depth = nd.normal_to_depth(K_inv, normal_vec)
+                    depth = nd.normal_to_depth(K_inv, normal_vec, opt.min_depth, opt.max_depth)
                     # print("new depth tensor shape", depth.shape)
 
                     output[("disp", 0)] = nd.depth_to_disp(K, depth)
