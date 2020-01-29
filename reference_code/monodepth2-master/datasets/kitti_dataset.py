@@ -119,7 +119,7 @@ class SuperpixelDataset(KITTIDataset):
         path = PurePath(path.replace("/", "\\")).as_posix()
 
         # saved superpixel for key "x"
-        super_label = np.load(path)["x"].astype(np.uint16)
+        super_label = np.load(path)["x"].astype(int)
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
