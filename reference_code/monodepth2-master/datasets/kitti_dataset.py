@@ -125,7 +125,7 @@ class SuperpixelDataset(KITTIDataset):
             super_img = avg_image(img, super_label)
 
             # convert label to pillow image
-            super_img = transforms.ToPILImage(super_img)
+            super_img = transforms.ToPILImage()(super_img)
 
         else:
             super_img = None
@@ -134,7 +134,7 @@ class SuperpixelDataset(KITTIDataset):
             super_label = np.fliplr(super_label)
 
         # convert label to pillow image
-        super_label = transforms.ToPILImage(super_label)
+        super_label = transforms.ToPILImage()(super_label)
 
         return super_label, super_img
 
