@@ -133,7 +133,11 @@ class SuperpixelDataset(KITTIDataset):
         if do_flip:
             super_label = np.fliplr(super_label)
 
+        # add an empty dimension for channel
+        super_label = np.expand_dims(super_label, axis=0)
+
         # convert label to pillow image
+        print("Shape ", super_label.shape)
         super_label = transforms.ToPILImage()(super_label)
 
         return super_label, super_img
