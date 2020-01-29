@@ -119,7 +119,7 @@ class SuperpixelDataset(KITTIDataset):
         path = PurePath(path.replace("/", "\\")).as_posix()
 
         # saved superpixel for key "x"
-        super_label = np.load(path)["x"].astype(int)
+        super_label = np.load(path)["x"].astype(np.int32)
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
@@ -137,8 +137,9 @@ class SuperpixelDataset(KITTIDataset):
         super_label = np.expand_dims(super_label, axis=0)
 
         # convert label to pillow image
-        print("Shape ", super_label.shape)
-        super_label = transforms.ToPILImage()(super_label)
+        # since there is no 16bit support, we need to use 32bit:
+        # mode I: (32-bit signed integer pixels)
+        super_label = transforms.ToPILImage(mode='I')(super_label)
 
         return super_label, super_img
 
