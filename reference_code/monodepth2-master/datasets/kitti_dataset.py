@@ -122,11 +122,18 @@ class SuperpixelDataset(KITTIDataset):
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
+
+            # convert label to pillow image
+            super_img = pil.fromarray(super_img)
+
         else:
             super_img = None
 
         if do_flip:
             super_label = np.fliplr(super_label)
+
+        # convert label to pillow image
+        super_label = pil.fromarray(super_label)
 
         return super_label, super_img
 
