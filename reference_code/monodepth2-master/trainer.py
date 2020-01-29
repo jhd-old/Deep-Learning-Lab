@@ -511,6 +511,43 @@ class Trainer:
 
         return sup_loss
 
+        def get_superpixel_mask_loss(self,disp,superpixel):
+        """
+        compute the loss with superpixel information.
+        Takes the superpixel boundaries to mask the gradient of the disparity.
+        Assumes same Height and Width  aka. scale of disp and superpixel
+
+        :param superpixel: superpixel indices/labels
+        :param disp: disparity output from network
+        :return: superpixel loss
+
+        :TODO: finish implementation
+        """
+
+        # gradient indices
+
+        # indices = indices.detach().numpy()
+
+        # subpixel would be possible too. Would return double sized image.
+        # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
+        boundaries = find_boundaries(superpixel, mode='outer')
+
+        # convert True/False in 1/0 and invert
+        # boundaries have index 0
+        boundaries = ~boundaries*1
+
+        #transform to tensor with shape (1,1,h,w)
+        boundaries = torch.tensor(boundaries).unsqueeze(0).unsqueeze(0)
+
+        #delete 1 Column/Row %TODO 
+        # maybe to different boundary arrays --> is find_boudaries appropriate ?
+        test_x = test[:,:,:,:255]
+        test_y = test[:,:,:255,:]
+        #
+        sup_loss = 0
+
+        return sup_loss
+
     def compute_reprojection_loss(self, pred, target):
         """Computes reprojection loss between a batch of predicted and target images
         """
