@@ -15,6 +15,7 @@ from pathlib import PurePath, Path
 from kitti_utils import generate_depth_map
 from superpixel_utils import avg_image
 from .mono_dataset import MonoDataset
+from torchvision import transforms
 
 
 class KITTIDataset(MonoDataset):
@@ -124,7 +125,7 @@ class SuperpixelDataset(KITTIDataset):
             super_img = avg_image(img, super_label)
 
             # convert label to pillow image
-            super_img = pil.fromarray(super_img)
+            super_img = transforms.ToPILImage(super_img)
 
         else:
             super_img = None
@@ -133,7 +134,7 @@ class SuperpixelDataset(KITTIDataset):
             super_label = np.fliplr(super_label)
 
         # convert label to pillow image
-        super_label = pil.fromarray(super_label)
+        super_label = transforms.ToPILImage(super_label)
 
         return super_label, super_img
 
