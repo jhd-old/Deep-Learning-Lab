@@ -133,6 +133,9 @@ class SuperpixelDataset(KITTIDataset):
         if do_flip:
             super_label = np.fliplr(super_label)
 
+        # add an empty dimension for channel
+        super_label = np.expand_dims(super_label, axis=2)
+
         # convert label to pillow image
         # since there is no 16bit support, we need to use 32bit:
         # mode I: (32-bit signed integer pixels)
