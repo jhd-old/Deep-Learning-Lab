@@ -65,6 +65,10 @@ class MonodepthOptions:
                                  help="additional arguments for superpixel methods",
                                  default=[120, 0.8, 80])
 
+        self.parser.add_argument("--no_superpixel_check",
+                                 help="dont check if superpixel information is there",
+                                 action="store_true")
+
         # LOSS
         # use superpixel information for loss function
         self.parser.add_argument("--superpixel_loss",
