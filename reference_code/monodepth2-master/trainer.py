@@ -524,29 +524,50 @@ class Trainer:
         :TODO: finish implementation
         """
 
-        # gradient indices
+        # calculate gradient from disp in x/y - direction 
+        # lenght is reduced by 1 
+        grad_disp_x = torch.abs(disp[:, :, :, :-1] - disp[:, :, :, 1:])
+        grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
 
-        # indices = indices.detach().numpy()
-
-        # subpixel would be possible too. Would return double sized image.
+        # Calculate boundaries from SP-labels. Subpixel would be possible too. Would return double sized image.
         # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
-        boundaries = find_boundaries(superpixel, mode='outer')
+        # boundaries = find_boundaries(superpixel, mode='outer')
+
+        # calculate x and y boundaries seperatly
+
+        #transform superpixel segments to tensor
+        labels = torch.tensor(superpixel).cuda().float()
+
+        #calculate gradient of the labels in x/y - direction
+        boundaries_x = torch.abs(labels[:, :-1] - labels[:, 1:])
+        boundaries_y = torch.abs(labels[:-1, :] - labels[1:, :])
+
+        #array with ones
+        ones_x = torch.ones(boundaries_x.shape).cuda().float()
+        ones_y = torch.ones(boundaries_y.shape).cuda().float()
+        zeros_x = torch.zeros_like(boundaries_x).cuda().float()
+        zeros_y = torch.zeros_like(boundaries_y).cuda().float()
+
+        # if inside SP --> 1, if at edge --> 0
+        boundaries_x = torch.where(boundaries_x == 0,ones_x,zeros_x)
+        boundaries_y = torch.where(boundaries_y == 0,ones_y,zeros_y)
 
         # convert True/False in 1/0 and invert
         # boundaries have index 0
-        boundaries = ~boundaries*1
+        #boundaries = ~boundaries*1
 
         #transform to tensor with shape (1,1,h,w)
-        boundaries = torch.tensor(boundaries).unsqueeze(0).unsqueeze(0)
-
+        boundaries = boundaries.unsqueeze(0).unsqueeze(0)
+        
         #delete 1 Column/Row %TODO 
         # maybe to different boundary arrays --> is find_boudaries appropriate ?
-        test_x = test[:,:,:,:255]
-        test_y = test[:,:,:255,:]
-        #
-        sup_loss = 0
+        #test_x = test[:,:,:,:255]
+        #test_y = test[:,:,:255,:]
+        
+        grad_disp_x *= boundaries_x
+        grad_disp_y *= boundaries_y
 
-        return sup_loss
+        return grad_disp_x.mean() + grad_disp_y.mean()
 
     def compute_reprojection_loss(self, pred, target):
         """Computes reprojection loss between a batch of predicted and target images
@@ -674,7 +695,12 @@ class Trainer:
 
             mean_disp = disp.mean(2, True).mean(3, True)
             norm_disp = disp / (mean_disp + 1e-7)
-            smooth_loss = get_smooth_loss(norm_disp, color)
+
+            if self.opt.superpixel_mask_loss:
+                #TODO: get superpixel from input dict.
+                smooth_loss = get_superpixel_mask_loss(disp,superpixel)
+            else:
+                smooth_loss = get_smooth_loss(norm_disp, color)
 
             loss += self.opt.disparity_smoothness * smooth_loss / (2 ** scale)
 

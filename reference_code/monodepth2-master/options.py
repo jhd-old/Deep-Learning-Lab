@@ -75,6 +75,10 @@ class MonodepthOptions:
                                  help="uses superpixel information for the loss fuction",
                                  action="store_true")
 
+        self.parser.add_argument("--superpixel_mask_loss",
+                                 help="uses superpixel information for the loss fuction",
+                                 action="store_true")
+
         # weighting factor for superpixel loss
         self.parser.add_argument("--superpixel_smoothness",
                                  type=float,
