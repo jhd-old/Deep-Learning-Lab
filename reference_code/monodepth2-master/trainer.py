@@ -295,6 +295,7 @@ class Trainer:
                     # concat superpixel to the image
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super_label", 0, 0]
+
                     inp = torch.cat((image, superpixel), dim=0)
 
                 elif self.opt.input_channels is 3:
