@@ -119,7 +119,7 @@ class SuperpixelDataset(KITTIDataset):
         path = PurePath(path.replace("/", "\\")).as_posix()
 
         # this file is one hierachy deeper than train.py
-        path = PurePath('../').joinpath(path)
+        path = PurePath('../').replace("/", "\\").joinpath(path)
 
         # saved superpixel for key "x"
         super_label = np.load(path)["x"].astype(np.int32)
