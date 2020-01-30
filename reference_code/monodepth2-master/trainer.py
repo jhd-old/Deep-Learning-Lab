@@ -296,8 +296,10 @@ class Trainer:
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super_label", 0, 0]
 
-                    inp = torch.cat((image, superpixel), dim=0)
-
+                    try:
+                        inp = torch.cat((image, superpixel), dim=0)
+                    except:
+                        print(superpixel.shape, image.shape)
                 elif self.opt.input_channels is 3:
                     # use only superpixel 3 channel input
                     inp = inputs["super_img_aug", 0, 0]
