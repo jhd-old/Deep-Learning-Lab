@@ -118,6 +118,9 @@ class SuperpixelDataset(KITTIDataset):
         # pure path will use unix or windows correct path depending on detected system
         path = PurePath(path.replace("/", "\\")).as_posix()
 
+        # this file is one hierachy deeper than train.py
+        path = PurePath('../').joinpath(path)
+
         # saved superpixel for key "x"
         super_label = np.load(path)["x"].astype(np.int32)
 
