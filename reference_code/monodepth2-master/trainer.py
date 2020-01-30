@@ -156,7 +156,7 @@ class Trainer:
                                           self.opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
 
                 print("Start converting validation images to superpixel.")
-                convert_rgb_to_superpixel(self.opt.data_path, train_filenames, self.opt.superpixel_method,
+                convert_rgb_to_superpixel(self.opt.data_path, val_filenames, self.opt.superpixel_method,
                                           self.opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
 
         num_train_samples = len(train_filenames)
