@@ -39,32 +39,6 @@ class ResNetMultiImageInput(models.ResNet):
                 nn.init.constant_(m.bias, 0)
 
 
-class FourChannelResNetMultiImageInput(ResNetMultiImageInput):
-    """Constructs a resnet model with varying number of input images.
-    Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
-    """
-
-    def __init__(self, block, layers, num_classes=1000, num_input_images=1):
-        super(FourChannelResNetMultiImageInput, self).__init__(block, layers, num_classes=1000, num_input_images=1)
-
-        # change convolution
-        self.conv1 = nn.Conv2d(
-            num_input_images * 4, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
-
-class SixChannelResNetMultiImageInput(ResNetMultiImageInput):
-    """Constructs a resnet model with varying number of input images.
-    Adapted from https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
-    """
-
-    def __init__(self, block, layers, num_classes=1000, num_input_images=1):
-        super(SixChannelResNetMultiImageInput, self).__init__(block, layers, num_classes=1000, num_input_images=1)
-
-        # change convolution
-        self.conv1 = nn.Conv2d(
-            num_input_images * 6, 64, kernel_size=7, stride=2, padding=3, bias=False)
-
-
 def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, num_input_channels=3):
     """Constructs a ResNet model.
     Args:
@@ -77,14 +51,10 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, nu
     blocks = {18: [2, 2, 2, 2], 50: [3, 4, 6, 3]}[num_layers]
     block_type = {18: models.resnet.BasicBlock, 50: models.resnet.Bottleneck}[num_layers]
 
-    if num_input_channels is 3:
-        model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
-    elif num_input_channels is 4:
-        model = FourChannelResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
-    elif num_input_channels is 6:
-        model = SixChannelResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
-    else:
-        raise NotImplementedError
+    model = ResNetMultiImageInput(block_type, blocks, num_input_images=num_input_images)
+
+    # modify the first convolution of the resnet to fit the number of input channels
+    model.conv1 = nn.Conv2d(num_input_images * num_input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
     if pretrained:
         loaded = model_zoo.load_url(models.resnet.model_urls['resnet{}'.format(num_layers)])
@@ -112,31 +82,20 @@ class ResnetEncoder(nn.Module):
         if num_layers not in resnets:
             raise ValueError("{} is not a valid number of resnet layers".format(num_layers))
 
-        if num_input_channels == 3:
-            if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=3)
-            else:
-                self.encoder = resnets[num_layers](pretrained)
-
-        elif num_input_channels == 4:
-            if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=4)
-            else:
-                self.encoder = resnets[num_layers](pretrained)
-
-        elif num_input_channels == 6:
-            if num_input_images > 1:
-                self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images, num_input_channels=6)
-            else:
-                self.encoder = resnets[num_layers](pretrained)
-
+        if num_input_images > 1:
+            self.encoder = resnet_multiimage_input(num_layers, pretrained, num_input_images)
         else:
-            raise NotImplementedError
+            self.encoder = resnets[num_layers](pretrained)
+
+        # modify the first convolution of the resnet to fit the number of input channels
+        self.encoder.conv1 = nn.Conv2d(num_input_images * num_input_channels, 64, kernel_size=7, stride=2, padding=3,
+                                       bias=False)
 
         if num_layers > 34:
             self.num_ch_enc[1:] *= 4
 
     def forward(self, input_image):
+
         self.features = []
         x = (input_image - 0.45) / 0.225
         x = self.encoder.conv1(x)
