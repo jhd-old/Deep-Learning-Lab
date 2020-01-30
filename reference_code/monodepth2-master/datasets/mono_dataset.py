@@ -128,8 +128,10 @@ class MonoDataset(data.Dataset):
             f = inputs[k]
             if "super_label" in k:
                 n, im, i = k
-                inputs[(n, im, i)] = self.to_tensor(f)
-                #inputs[(n + "_aug", im, i)] = self.to_tensor(color_aug(f))
+                label_tensor = self.to_tensor(f).float()
+
+                # need to add dimension to fit (channels, h, w) of normal images
+                inputs[(n, im, i)] = torch.unsqueeze(label_tensor, dim=0)
 
         # second scale superpixel images
         for k in list(inputs):
