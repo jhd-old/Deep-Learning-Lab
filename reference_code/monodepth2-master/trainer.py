@@ -296,10 +296,10 @@ class Trainer:
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super_label", 0, 0]
 
-                    try:
-                        inp = torch.cat((image, superpixel), dim=0)
-                    except:
-                        print(superpixel.shape, image.shape)
+                    # need to concat at dimension 1
+                    # because it is: (batchsize, channels, h, w)
+                    inp = torch.cat((image, superpixel), dim=1)
+
                 elif self.opt.input_channels is 3:
                     # use only superpixel 3 channel input
                     inp = inputs["super_img_aug", 0, 0]
@@ -308,7 +308,7 @@ class Trainer:
                     # use 3 channel superpixel and 3 channel standard rgb image
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super_img_aug", 0, 0]
-                    inp = torch.cat((image, superpixel), dim=0)
+                    inp = torch.cat((image, superpixel), dim=1)
 
                 else:
                     raise NotImplementedError("Given input channel number is not implemented yet!")
