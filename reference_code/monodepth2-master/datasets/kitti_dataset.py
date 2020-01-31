@@ -123,14 +123,19 @@ class SuperpixelDataset(KITTIDataset):
 
         # check if file exists
         # it really should, but just to be safe
-        if not os.path.isfile(path):
+        try:
+            # saved superpixel for key "x"
+            super_label = np.load(path)["x"].astype(np.int32)
+
+        except:
             convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
             self.invalid_superpixel_paths += 1
-            print("Warning: superpixel couldn't be loaded. Recalculating superpixel data! Occurred {} times!"
+            print("Warning: Couldn't load superpixel at {}".format(str(path)))
+            print("Recalculating superpixel data! Occurred {} times!"
                   .format(self.invalid_superpixel_paths))
 
-        # saved superpixel for key "x"
-        super_label = np.load(path)["x"].astype(np.int32)
+            # saved superpixel for key "x"
+            super_label = np.load(path)["x"].astype(np.int32)
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
