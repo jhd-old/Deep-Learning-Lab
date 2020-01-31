@@ -125,9 +125,10 @@ class SuperpixelDataset(KITTIDataset):
         print("Superpixel found", super_ex)
 
         # pure path will use unix or windows correct path depending on detected system
-        path = PurePath((path + ".npz").replace("/", "\\")).as_posix()
+        path = PurePath((path + ".npz").replace("/", "\\"))
 
         super_dir_ex = os.path.isdir(path.parents[1])
+        path = path.as_posix()
         print("Super directory ex", super_dir_ex)
         # check if file exists
         # it really should, but just to be safe
