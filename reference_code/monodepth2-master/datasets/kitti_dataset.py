@@ -94,6 +94,8 @@ class SuperpixelDataset(KITTIDataset):
     def __init__(self, *args, **kwargs):
         super(SuperpixelDataset, self).__init__(*args, **kwargs)
 
+        self.invalid_superpixel_paths = 0
+
     def get_image_path(self, folder, frame_index, side):
         f_str = "{:010d}{}".format(frame_index, self.img_ext)
         image_path = os.path.join(
@@ -121,9 +123,11 @@ class SuperpixelDataset(KITTIDataset):
 
         # check if file exists
         # it really should, but just to be safe
-        if not path.isfile():
+        if not Path(path).isfile():
             convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
-            print("Warning: superpixel couldn't be loaded. Recalculating superpixel data!")
+            self.invalid_superpixel_paths += 1
+            print("Warning: superpixel couldn't be loaded. Recalculating superpixel data! Occurred {} times!"
+                  .format(self.invalid_superpixel_paths))
 
         # saved superpixel for key "x"
         super_label = np.load(path)["x"].astype(np.int32)
