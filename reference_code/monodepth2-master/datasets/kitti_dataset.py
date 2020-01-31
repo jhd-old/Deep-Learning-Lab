@@ -119,10 +119,11 @@ class SuperpixelDataset(KITTIDataset):
         path = self.get_image_path(folder, frame_index, side)
 
         image_ex = os.path.isfile(path)
-        print("Image found", image_ex)
+        print("Image found", image_ex, str(path))
 
-        super_ex = os.path.isfile(path.replace(img_ext, superpixel_ident))
-        print("Superpixel found", super_ex)
+        path = path.replace(img_ext, superpixel_ident)
+        super_ex = os.path.isfile(path)
+        print("Superpixel found", super_ex, str(path))
 
         # pure path will use unix or windows correct path depending on detected system
         path = PurePath((path + ".npz").replace("/", "\\"))
