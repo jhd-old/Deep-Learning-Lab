@@ -116,11 +116,19 @@ class SuperpixelDataset(KITTIDataset):
 
             superpixel_ident += a
 
-        path = self.get_image_path(folder, frame_index, side).replace(img_ext, superpixel_ident)
+        path = self.get_image_path(folder, frame_index, side)
+
+        image_ex = os.path.isfile(path)
+        print("Image found", image_ex)
+
+        super_ex = os.path.isfile(path.replace(img_ext, superpixel_ident))
+        print("Superpixel found", super_ex)
 
         # pure path will use unix or windows correct path depending on detected system
         path = PurePath((path + ".npz").replace("/", "\\")).as_posix()
 
+        super_dir_ex = os.path.isdir(path.parents[1])
+        print("Super directory ex", super_dir_ex)
         # check if file exists
         # it really should, but just to be safe
         try:
@@ -128,7 +136,7 @@ class SuperpixelDataset(KITTIDataset):
             super_label = np.load(path)["x"].astype(np.int32)
 
         except:
-            convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+            #convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
             self.invalid_superpixel_paths += 1
             print("Warning: Couldn't load superpixel at {}".format(str(path)))
             print("Recalculating superpixel data! Occurred {} times!"
