@@ -225,8 +225,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
     else:
         return ConversionState.already_converted
 
-get_superpixel_path():
-
 
 def convert_single_rgb_to_superpixel(superpixel_path, img_ext='jpg', superpixel_method='fz', superpixel_arguments=None):
 
