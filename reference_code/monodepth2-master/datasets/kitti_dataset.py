@@ -113,13 +113,10 @@ class SuperpixelDataset(KITTIDataset):
 
             superpixel_ident += a
 
-        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npz"))
+        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + ".npz")
 
         # pure path will use unix or windows correct path depending on detected system
         path = PurePath(path.replace("/", "\\")).as_posix()
-
-        # this file is one hierachy deeper than train.py
-        path = PurePath('../').replace("/", "\\").joinpath(path)
 
         # saved superpixel for key "x"
         super_label = np.load(path)["x"].astype(np.int32)
