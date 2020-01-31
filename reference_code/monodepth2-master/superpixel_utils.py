@@ -236,7 +236,7 @@ def convert_single_rgb_to_superpixel(superpixel_path, img_ext='jpg', superpixel_
 
         superpixel_ident_idx = superpixel_path.find(superpixel_method)
 
-        img_path = PurePath(superpixel_path[:superpixel_ident_idx]).joinpath(PurePath(img_ext))
+        img_path = PurePath(superpixel_path[:superpixel_ident_idx] + str(img_ext))
 
         # load image
         img = pil_loader(img_path)
