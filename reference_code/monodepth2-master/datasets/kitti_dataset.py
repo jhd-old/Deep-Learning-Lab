@@ -123,7 +123,7 @@ class SuperpixelDataset(KITTIDataset):
 
         # check if file exists
         # it really should, but just to be safe
-        if not Path(path).isfile():
+        if not os.path.isfile(path):
             convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
             self.invalid_superpixel_paths += 1
             print("Warning: superpixel couldn't be loaded. Recalculating superpixel data! Occurred {} times!"
