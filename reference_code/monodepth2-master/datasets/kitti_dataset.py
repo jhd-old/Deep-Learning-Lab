@@ -16,6 +16,7 @@ from kitti_utils import generate_depth_map
 from superpixel_utils import avg_image
 from .mono_dataset import MonoDataset
 from torchvision import transforms
+from superpixel_utils import convert_single_rgb_to_superpixel
 
 
 class KITTIDataset(MonoDataset):
@@ -117,6 +118,12 @@ class SuperpixelDataset(KITTIDataset):
 
         # pure path will use unix or windows correct path depending on detected system
         path = PurePath(path.replace("/", "\\")).as_posix()
+
+        # check if file exists
+        # it really should, but just to be safe
+        if not path.isfile():
+            convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+            print("Warning: superpixel couldn't be loaded. Recalculating superpixel data!")
 
         # saved superpixel for key "x"
         super_label = np.load(path)["x"].astype(np.int32)
