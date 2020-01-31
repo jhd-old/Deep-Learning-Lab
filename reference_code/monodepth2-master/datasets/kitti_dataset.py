@@ -116,10 +116,10 @@ class SuperpixelDataset(KITTIDataset):
 
             superpixel_ident += a
 
-        path = self.get_image_path(folder, frame_index, side).replace(img_ext, superpixel_ident + ".npz")
+        path = self.get_image_path(folder, frame_index, side).replace(img_ext, superpixel_ident)
 
         # pure path will use unix or windows correct path depending on detected system
-        path = PurePath(path.replace("\\", "/")).as_posix()
+        path = PurePath((path + ".npz").replace("/", "\\")).as_posix()
 
         # check if file exists
         # it really should, but just to be safe
