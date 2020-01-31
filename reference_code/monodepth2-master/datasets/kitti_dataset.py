@@ -126,7 +126,7 @@ class SuperpixelDataset(KITTIDataset):
         print("Superpixel found", super_ex, str(path))
 
         # pure path will use unix or windows correct path depending on detected system
-        path = PurePath((path + ).replace("/", "\\"))
+        path = PurePath(path.replace("/", "\\"))
 
         super_dir_ex = os.path.isdir(path.parents[1])
         path = path.as_posix()
