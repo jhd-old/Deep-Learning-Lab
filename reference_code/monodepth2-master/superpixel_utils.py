@@ -298,7 +298,9 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
     else:
 
         for dirpath, dirnames, filenames in os.walk(folder):
-            for filename in [f for f in filenames if f.endswith(img_ext)]:
+            all_images = [f for f in filenames if f.endswith(img_ext)]
+
+            for filename in all_images:
                 image_path = os.path.join(dirpath, filename)
 
                 # load image
@@ -334,7 +336,7 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
                     converted += 1
 
                 if converted % n_prints == 0:
-                    print("Converted {}/{} images to superpixel!".format(converted, len(filenames)))
+                    print("Converted {}/{} images to superpixel!".format(converted, len(all_images)))
     return converted
 
 
