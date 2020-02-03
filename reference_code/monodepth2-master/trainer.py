@@ -442,7 +442,10 @@ class Trainer:
                 source_scale = scale
 
             else:
-                disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+                try:
+                    disp = F.interpolate(disp, [self.opt.height, self.opt.width], mode="bilinear", align_corners=False)
+                except:
+                    raise IOError("Error with shape" + str(disp.shape))
 
                 source_scale = 0
 
