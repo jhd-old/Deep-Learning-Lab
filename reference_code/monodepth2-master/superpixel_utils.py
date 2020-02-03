@@ -289,6 +289,7 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
     """
 
     converted = 0
+    already_converted = 0
 
     # print steps
     n_prints = 500
@@ -301,19 +302,8 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
             all_images = [f for f in filenames if f.endswith(img_ext)]
 
             for filename in all_images:
+
                 image_path = os.path.join(dirpath, filename)
-
-                # load image
-                img = pil_loader(image_path)
-
-                # convert image to numpy
-                img = np.array(img)
-
-                # calculate superpixel
-                sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
-
-                # force superpixel to be unsigned 16bit integer
-                sup = sup.astype(np.uint16)
 
                 # change file type to none, numpy will add .npz automatically
                 save_sup_path = image_path.replace(img_ext, "")
@@ -328,15 +318,35 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
 
                 save_sup_path += superpixel_ident + '.npz'
 
-                np.savez_compressed(save_sup_path, x=sup)
-
                 if not os.path.isfile(save_sup_path):
-                    raise IOError("Couldnt save superpixel at following path: {}!".format(save_sup_path))
-                else:
-                    converted += 1
 
-                if converted % n_prints == 0:
-                    print("Converted {}/{} images to superpixel!".format(converted, len(all_images)))
+                    # load image
+                    img = pil_loader(image_path)
+
+                    # convert image to numpy
+                    img = np.array(img)
+
+                    # calculate superpixel
+                    sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+
+                    # force superpixel to be unsigned 16bit integer
+                    sup = sup.astype(np.uint16)
+
+                    np.savez_compressed(save_sup_path, x=sup)
+
+                    if not os.path.isfile(save_sup_path):
+                        raise IOError("Couldnt save superpixel at following path: {}!".format(save_sup_path))
+                    else:
+                        converted += 1
+
+                else:
+                    already_converted += 1
+                    
+                if converted % n_prints == 0 or already_converted % n_prints == 0:
+                    print("Converted {}/{} images to superpixel! {} were already converted.".format(converted,
+                                                                                                    len(all_images),
+                          already_converted))
+
     return converted
 
 
