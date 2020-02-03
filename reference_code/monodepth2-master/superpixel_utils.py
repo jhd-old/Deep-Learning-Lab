@@ -290,6 +290,9 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
 
     converted = 0
 
+    # print steps
+    n_prints = 500
+
     if not os.path.isdir(folder):
         raise IOError("Given folder is no folder")
     else:
@@ -330,6 +333,8 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
                 else:
                     converted += 1
 
+                if converted % n_prints == 0:
+                    print("Converted {}/{} images to superpixel!".format(converted, len(filenames)))
     return converted
 
 
