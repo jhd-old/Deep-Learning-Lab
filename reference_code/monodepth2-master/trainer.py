@@ -539,8 +539,9 @@ class Trainer:
         labels = torch.tensor(superpixel).cuda().float()
 
         #calculate gradient of the labels in x/y - direction
-        boundaries_x = torch.abs(labels[:, :-1] - labels[:, 1:])
-        boundaries_y = torch.abs(labels[:-1, :] - labels[1:, :])
+        # added new dimension cause superpixels in shape (1,H,W)
+        boundaries_x = torch.abs(labels[:,:, :-1] - labels[:,:, 1:])
+        boundaries_y = torch.abs(labels[:,:-1, :] - labels[:,1:, :])
 
         #array with ones
         ones_x = torch.ones(boundaries_x.shape).cuda().float()
@@ -557,12 +558,8 @@ class Trainer:
         #boundaries = ~boundaries*1
 
         #transform to tensor with shape (1,1,h,w)
-        boundaries = boundaries.unsqueeze(0).unsqueeze(0)
-        
-        #delete 1 Column/Row %TODO 
-        # maybe to different boundary arrays --> is find_boudaries appropriate ?
-        #test_x = test[:,:,:,:255]
-        #test_y = test[:,:,:255,:]
+        boundaries_x = boundaries.unsqueeze(0)
+        boundaries_y = boundaries.unsqueeze(0)
         
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
