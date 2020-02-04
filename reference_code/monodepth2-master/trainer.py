@@ -430,7 +430,7 @@ class Trainer:
 
                 K_inv = inputs[("inv_K", scale)]
 
-                disp = nd.normals_to_disp(K_inv, normal_vec)
+                disp = nd.normals_to_disp3(K_inv, normal_vec)
 
                 outputs[("disp", scale)] = disp
 
