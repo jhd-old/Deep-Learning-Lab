@@ -700,8 +700,10 @@ class Trainer:
             norm_disp = disp / (mean_disp + 1e-7)
 
             if self.opt.superpixel_mask_loss:
-                #TODO: get superpixel from input dict.
-                smooth_loss = get_superpixel_mask_loss(disp,superpixel)
+                # get superpixel label data for current scale
+                superpixel = outputs["super_label", 0, scale]
+
+                smooth_loss = self.get_superpixel_mask_loss(disp, superpixel)
             else:
                 smooth_loss = get_smooth_loss(norm_disp, color)
 
