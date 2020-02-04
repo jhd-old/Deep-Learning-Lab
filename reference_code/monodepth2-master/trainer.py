@@ -529,10 +529,12 @@ class Trainer:
         """
         compute the loss with superpixel information.
         Takes the superpixel boundaries to mask the gradient of the disparity.
-        Assumes same Height and Width  aka. scale of disp and superpixel
+        Assumes same Height and Width  aka. scale of disp and superpixel and img
 
         :param superpixel: superpixel indices/labels
         :param disp: disparity output from network
+        :param img: color output from network
+        :param threshold: gradient threshold
         :return: superpixel loss
 
         :TODO: finish implementation
