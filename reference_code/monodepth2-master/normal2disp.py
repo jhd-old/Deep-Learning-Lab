@@ -52,6 +52,11 @@ def normals_to_disp(inv_K, normal):
     # TODO: check if will still want to use this
     disp = (normal_vectors * cam_points).sum(1)
 
+    disp = torch.unsqueeze(disp, dim=1)
+
+    # unstack to retrieve one depth matrix per batch (batch size, 1, h, w)
+    disp = disp.view(batch_size, 1, h, w)
+
     return disp
 
 

@@ -16,6 +16,7 @@ from kitti_utils import generate_depth_map
 from superpixel_utils import avg_image
 from .mono_dataset import MonoDataset
 from torchvision import transforms
+from superpixel_utils import convert_single_rgb_to_superpixel
 
 
 class KITTIDataset(MonoDataset):
@@ -93,6 +94,8 @@ class SuperpixelDataset(KITTIDataset):
     def __init__(self, *args, **kwargs):
         super(SuperpixelDataset, self).__init__(*args, **kwargs)
 
+        self.invalid_superpixel_paths = 0
+
     def get_image_path(self, folder, frame_index, side):
         f_str = "{:010d}{}".format(frame_index, self.img_ext)
         image_path = os.path.join(
@@ -113,13 +116,36 @@ class SuperpixelDataset(KITTIDataset):
 
             superpixel_ident += a
 
-        path = self.get_image_path(folder, frame_index, side).replace(self.img_ext, superpixel_ident + str(".npz"))
+        path = self.get_image_path(folder, frame_index, side)
+
+        image_ex = os.path.isfile(path)
+        print("Image found", image_ex, str(path))
+
+        path = path.replace(img_ext, superpixel_ident + ".npz")
+        super_ex = os.path.isfile(path)
+        print("Superpixel found", super_ex, str(path))
 
         # pure path will use unix or windows correct path depending on detected system
-        path = PurePath(path.replace("/", "\\")).as_posix()
+        path = PurePath(path.replace("/", "\\"))
 
-        # saved superpixel for key "x"
-        super_label = np.load(path)["x"].astype(np.int32)
+        super_dir_ex = os.path.isdir(path.parents[1])
+        path = path.as_posix()
+        print("Super directory ex", super_dir_ex)
+        # check if file exists
+        # it really should, but just to be safe
+        try:
+            # saved superpixel for key "x"
+            super_label = np.load(path)["x"].astype(np.int32)
+
+        except:
+            #convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+            self.invalid_superpixel_paths += 1
+            print("Warning: Couldn't load superpixel at {}".format(str(path)))
+            print("Recalculating superpixel data! Occurred {} times!"
+                  .format(self.invalid_superpixel_paths))
+
+            # saved superpixel for key "x"
+            super_label = np.load(path)["x"].astype(np.int32)
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)

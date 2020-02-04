@@ -12,6 +12,8 @@ from skimage.segmentation import felzenszwalb, slic
 
 from datasets.mono_dataset import pil_loader
 
+from options import MonodepthOptions
+
 
 def save_superpixel_in_archive(file_path, data, compressed=True):
     """
@@ -103,6 +105,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
     # get image path
     # if none, converts all images in dataset
+
     line = path.split()
     folder = line[0]
 
@@ -225,6 +228,128 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         return ConversionState.already_converted
 
 
+def convert_single_rgb_to_superpixel(superpixel_path, img_ext='jpg', superpixel_method='fz', superpixel_arguments=None):
+
+    num_channel = 4
+    state = None
+
+    if not os.path.isfile(superpixel_path):
+        # get folder name of the current image to retrieve saving path
+
+        superpixel_ident_idx = superpixel_path.find(superpixel_method)
+
+        img_path = PurePath((superpixel_path[:superpixel_ident_idx] + str(img_ext)).replace("/", "\\")).as_posix()
+
+        # load image
+        img = pil_loader(img_path)
+
+        # convert image to numpy
+        img = np.array(img)
+
+        # calculate superpixel
+        sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+
+        # force superpixel to be unsigned 16bit integer
+        sup = sup.astype(np.uint16)
+
+        # create directory to be save
+        Path(superpixel_path).parent.mkdir(parents=True, exist_ok=True)
+
+        if num_channel is 4:
+            # save superpixel information as uint16 in a compressed numpy archive
+            np.savez_compressed(superpixel_path, x=sup)
+
+        if num_channel is 4:
+            val = np.load(superpixel_path)["x"].astype(np.uint16)
+
+            if val is None:
+                state = ConversionState.failed_to_convert
+            else:
+                state = ConversionState.converted
+
+            del val
+
+        if state == ConversionState.failed_to_convert:
+            raise IOError("Superpixel couldn't be saved at the following path: " + str(superpixel_path))
+
+        return state
+
+    else:
+        return ConversionState.already_converted
+
+
+def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[], img_ext='.jpg'):
+    """
+    Convert all images in given folder to superpixel.
+
+    :param folder:
+    :param superpixel_method:
+    :param superpixel_arguments:
+    :return:
+    """
+
+    converted = 0
+    already_converted = 0
+
+    # print steps
+    n_prints = 500
+
+    if not os.path.isdir(folder):
+        raise IOError("Given folder is no folder")
+    else:
+
+        for dirpath, dirnames, filenames in os.walk(folder):
+            all_images = [f for f in filenames if f.endswith(img_ext)]
+
+            for filename in all_images:
+
+                image_path = os.path.join(dirpath, filename)
+
+                # change file type to none, numpy will add .npz automatically
+                save_sup_path = image_path.replace(img_ext, "")
+
+                # add identifier for superpixel method and arguments
+                superpixel_ident = str(superpixel_method)
+
+                for a in superpixel_arguments:
+                    # replace . with _
+                    a = str(a).replace(".", "_")
+                    superpixel_ident += a
+
+                save_sup_path += superpixel_ident + '.npz'
+
+                if not os.path.isfile(save_sup_path):
+
+                    # load image
+                    img = pil_loader(image_path)
+
+                    # convert image to numpy
+                    img = np.array(img)
+
+                    # calculate superpixel
+                    sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+
+                    # force superpixel to be unsigned 16bit integer
+                    sup = sup.astype(np.uint16)
+
+                    np.savez_compressed(save_sup_path, x=sup)
+
+                    if not os.path.isfile(save_sup_path):
+                        raise IOError("Couldnt save superpixel at following path: {}!".format(save_sup_path))
+                    else:
+                        converted += 1
+
+                else:
+                    already_converted += 1
+                    
+                if converted % n_prints == 0 or already_converted % n_prints == 0:
+                    print("Converted {}/{} images to superpixel! {} were already converted.".format(converted,
+                                                                                                    len(all_images),
+                          already_converted))
+
+    return converted
+
+
 def calc_superpixel(img, method="fz", args=[]):
     """
     Calculates superpixels from given image.
@@ -304,3 +429,18 @@ class ConversionState(IntEnum):
     converted = 0
     already_converted = 1
     failed_to_convert = 2
+
+
+options = MonodepthOptions()
+opts = options.parse()
+
+if __name__ == "__main__":
+
+    method = opts.superpixel_method
+    args = opts.superpixel_arguments
+
+    folder = opts.data_path
+    print("Start converting images at {}".format(folder))
+    print("Using {} method and {} as arguments".format(method, args))
+    num_con = convert_all_in_folder(folder, method, args)
+    print("Converted {} images to superpixel!".format(num_con))
