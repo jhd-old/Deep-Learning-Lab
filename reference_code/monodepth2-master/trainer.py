@@ -517,7 +517,7 @@ class Trainer:
 
         return sup_loss
 
-        def get_superpixel_mask_loss(self,disp,superpixel):
+    def get_superpixel_mask_loss(self, disp, superpixel):
         """
         compute the loss with superpixel information.
         Takes the superpixel boundaries to mask the gradient of the disparity.
