@@ -55,7 +55,7 @@ class MonoDataset(data.Dataset):
         self.width = width
         self.num_scales = num_scales
         self.interp = Image.ANTIALIAS
-        self.use_superpixel = str(opt.dataset) == "kitti_superpixel" or bool(opt.superpixel_loss)
+        self.use_superpixel = str(opt.dataset) == "kitti_superpixel" or opt.superpixel_loss or opt.normal_loss
         self.num_input_channels = opt.input_channels
         self.opt = opt
         self.frame_idxs = frame_idxs
