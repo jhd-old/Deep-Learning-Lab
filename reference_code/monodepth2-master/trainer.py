@@ -137,7 +137,7 @@ class Trainer:
         img_ext = '.png' if self.opt.png else '.jpg'
 
         # Check if superpixel dataset is used and create superpixel image
-        if "superpixel" in self.opt.dataset:
+        if "superpixel" in self.opt.dataset or self.opt.superpixel_loss:
             # get number of channels to use for superpixel
             # 4 channel will use numpy array with superpixel indices
             # 3 channel will use only image averaged over superpixel area
@@ -699,7 +699,7 @@ class Trainer:
             mean_disp = disp.mean(2, True).mean(3, True)
             norm_disp = disp / (mean_disp + 1e-7)
 
-            if self.opt.superpixel_mask_loss:
+            if self.opt.superpixel_loss and self.opt.superpixel_loss_method == "mask_loss":
                 # get superpixel label data for current scale
                 superpixel = outputs["super_label", 0, scale]
 
@@ -710,7 +710,7 @@ class Trainer:
             loss += self.opt.disparity_smoothness * smooth_loss / (2 ** scale)
 
             # add addtional superpixel loss if selected
-            if self.opt.superpixel_loss:
+            if self.opt.superpixel_loss and self.opt.superpixel_loss_method == "loss":
 
                 # need to be sure that superpixel dataset is used
                 if self.opt.dataset == "kitti_superpixel":
