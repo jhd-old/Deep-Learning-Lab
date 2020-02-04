@@ -564,8 +564,8 @@ class Trainer:
         #boundaries = ~boundaries*1
 
         #transform to tensor with shape (1,1,h,w)
-        boundaries_x = boundaries.unsqueeze(0)
-        boundaries_y = boundaries.unsqueeze(0)
+        boundaries_x = boundaries_x.unsqueeze(0)
+        boundaries_y = boundaries_y.unsqueeze(0)
         
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
