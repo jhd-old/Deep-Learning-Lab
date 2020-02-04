@@ -78,13 +78,13 @@ class MonodepthOptions:
         self.parser.add_argument("--superpixel_loss_method",
                                  help="which loss mehtod to use for superpixel loss",
                                  type=str,
-                                 choices=["loss", "mask_loss"],
+                                 choices=["normal_loss", "mask_loss"],
                                  default="mask_loss")
 
         # weighting factor for superpixel loss
-        self.parser.add_argument("--superpixel_smoothness",
+        self.parser.add_argument("--normals_smoothness",
                                  type=float,
-                                 help="factor to add superpixel loss weighted to the total loss",
+                                 help="factor to add normals loss weighted to the total loss",
                                  default=0.1)
 
         ##############################################

@@ -488,7 +488,7 @@ class Trainer:
         # added return
         return outputs
 
-    def compute_superpixel_loss(self, superpixel, normals):
+    def compute_normals_loss(self, superpixel, normals):
         """
         compute the loss with superpixel information.
         Forces normal vectors in one superpixel to be equal.
@@ -497,25 +497,33 @@ class Trainer:
         :param normals: vector normals
         :return: superpixel loss
 
-        :TODO: finish implementation
+        :TODO: check implementation
         """
 
-        indices = torch.unique_consecutive(superpixel)
+        # init normals loss
+        normals_loss = 0
 
-        # gradient indices
+        # get indices
+        superpixel_indices = torch.unique_consecutive(superpixel)
 
-        # indices = indices.detach().numpy()
+        # convert torch superpixel to numpy
+        superpixel_np = superpixel.detach().numpy()
 
-        # subpixel would be possible too. Would return double sized image.
-        # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
-        boundaries = find_boundaries(superpixel, mode='outer')
+        # get pixel for each superpixel area
+        superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
 
-        boundaries = torch.tensor()
+        # convert torch normals to numpy
+        normals_np = normals.detach().numpy()
 
-        #
-        sup_loss = 0
+        # get all normals pixel values per superpixel area
+        normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
 
-        return sup_loss
+        for normals in normals_per_superpixel:
+            # calculate standard deviation for each area
+            # calculate first for each channel of current area, then sum for current area
+            normals_loss += np.sum(np.std(normals, axis=0))
+
+        return normals_loss
 
     def get_superpixel_mask_loss(self, disp, superpixel):
         """
@@ -710,13 +718,14 @@ class Trainer:
             loss += self.opt.disparity_smoothness * smooth_loss / (2 ** scale)
 
             # add addtional superpixel loss if selected
-            if self.opt.superpixel_loss and self.opt.superpixel_loss_method == "loss":
+            if self.opt.superpixel_loss and self.opt.superpixel_loss_method == "normal_loss":
 
                 # need to be sure that superpixel dataset is used
                 if self.opt.dataset == "kitti_superpixel":
 
                     superpixel = outputs[("super_label", 0, scale)]
-                    loss += self.opt.superpixel_smoothness * self.compute_superpixel_loss(superpixel, color) / (
+                    normals = outputs[("normal_vec", 0)]
+                    loss += self.opt.normals_smoothness * self.compute_normals_loss(superpixel, normals) / (
                                 2 ** scale)
 
                 else:
