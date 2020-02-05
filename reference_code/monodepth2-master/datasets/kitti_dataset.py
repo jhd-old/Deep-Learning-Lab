@@ -109,6 +109,7 @@ class SuperpixelDataset(KITTIDataset):
         # --> load numpy array with superpixel inidices as data
 
         superpixel_ident = str(method)
+        super_label = None
 
         for a in arguments:
             # replace . with _
@@ -139,10 +140,16 @@ class SuperpixelDataset(KITTIDataset):
 
                 super_file = np.load(path)
             except:
-                raise IOError("Error while loading superpixel path at " + str(path))
+                # do the necessary thing: create superpixel information
+                try:
+                    super_label = convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+                except:
+                    raise IOError("Error while loading superpixel path at " + str(path) + ". Tried to calculate online,"
+                                                                                          " but failed!")
 
         try:
-            super_label = super_file["x"].astype(np.int32)
+            if super_label is not None:
+                super_label = super_file["x"].astype(np.int32)
         except:
             raise IOError("Error while reading data of superpixel!")
 

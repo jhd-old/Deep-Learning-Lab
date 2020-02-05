@@ -285,52 +285,28 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
 def convert_single_rgb_to_superpixel(superpixel_path, img_ext='jpg', superpixel_method='fz', superpixel_arguments=None):
 
-    num_channel = 4
-    state = None
+    # get folder name of the current image to retrieve saving path
 
-    if not os.path.isfile(superpixel_path):
-        # get folder name of the current image to retrieve saving path
+    superpixel_ident_idx = superpixel_path.find(superpixel_method)
 
-        superpixel_ident_idx = superpixel_path.find(superpixel_method)
+    img_path = PurePath(superpixel_path[:superpixel_ident_idx] + str(img_ext))
 
-        img_path = PurePath((superpixel_path[:superpixel_ident_idx] + str(img_ext)).replace("/", "\\")).as_posix()
+    # load image
+    img = pil_loader(img_path)
 
-        # load image
-        img = pil_loader(img_path)
+    # convert image to numpy
+    img = np.array(img)
 
-        # convert image to numpy
-        img = np.array(img)
+    # calculate superpixel
+    sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
 
-        # calculate superpixel
-        sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+    # force superpixel to be unsigned 16bit integer
+    sup = sup.astype(np.uint16)
 
-        # force superpixel to be unsigned 16bit integer
-        sup = sup.astype(np.uint16)
+    # save superpixel information as uint16 in a compressed numpy archive
+    np.savez_compressed(superpixel_path, x=sup)
 
-        # create directory to be save
-        Path(superpixel_path).parent.mkdir(parents=True, exist_ok=True)
-
-        if num_channel is 4:
-            # save superpixel information as uint16 in a compressed numpy archive
-            np.savez_compressed(superpixel_path, x=sup)
-
-        if num_channel is 4:
-            val = np.load(superpixel_path)["x"].astype(np.uint16)
-
-            if val is None:
-                state = ConversionState.failed_to_convert
-            else:
-                state = ConversionState.converted
-
-            del val
-
-        if state == ConversionState.failed_to_convert:
-            raise IOError("Superpixel couldn't be saved at the following path: " + str(superpixel_path))
-
-        return state
-
-    else:
-        return ConversionState.already_converted
+    return sup
 
 
 def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[], img_ext='.jpg'):
