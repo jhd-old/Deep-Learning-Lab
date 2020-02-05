@@ -279,7 +279,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
                 raise IOError("Superpixel couldn't be saved at the following path: " + str(save_sup_path))
 
             print("Repaired superpixel data!")
-            
+
             return state
 
 

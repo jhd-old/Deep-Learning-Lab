@@ -120,11 +120,6 @@ class SuperpixelDataset(KITTIDataset):
 
         path = path.replace(img_ext, superpixel_ident + ".npz")
 
-        # pure path will use unix or windows correct path depending on detected system
-        path = PurePath(path.replace("/", "\\"))
-
-        path = path.as_posix()
-
         # check if file exists
         # it really should, but just to be safe
         try:
@@ -134,7 +129,17 @@ class SuperpixelDataset(KITTIDataset):
             else:
                 raise IOError("No file at given path: " + (str(path)))
         except:
-            raise IOError("Error while loading superpixel at " + str(path))
+
+            try:
+                # try to use posix
+                # pure path will use unix or windows correct path depending on detected system
+                path = PurePath(path.replace("/", "\\"))
+
+                path = path.as_posix()
+
+                super_file = np.load(path)
+            except:
+                raise IOError("Error while loading superpixel path at " + str(path))
 
         try:
             super_label = super_file["x"].astype(np.int32)
