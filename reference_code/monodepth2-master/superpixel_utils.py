@@ -205,6 +205,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
     # check if already converted
     if not os.path.isfile(save_sup_path):
+
         # get folder name of the current image to retrieve saving path
 
         # load image
@@ -247,7 +248,50 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         return state
 
     else:
-        return ConversionState.already_converted
+        # check if its valid
+        if np.load(save_sup_path) is not None:
+            return ConversionState.already_converted
+        else:
+            # get folder name of the current image to retrieve saving path
+
+            # load image
+            img = pil_loader(img_path)
+
+            # convert image to numpy
+            img = np.array(img)
+
+            # calculate superpixel
+            sup = calc_superpixel(img, superpixel_method, superpixel_arguments)
+
+            # force superpixel to be unsigned 16bit integer
+            sup = sup.astype(np.uint16)
+
+            if num_channel is 4:
+                # save superpixel in numpy archive
+
+                save_sup_path = PurePath(save_sup_path).as_posix()
+
+                # save superpixel information as uint16 in a compressed numpy archive
+                np.savez_compressed(save_sup_path, x=sup)
+
+            elif num_channel is 3 or num_channel is 6:
+                # save as image
+
+                # average over superpixel area
+                sup_img = avg_image(img, sup)
+
+                # convert numpy img back to PIL Image
+                sup_img = Image.fromarray(sup_img)
+
+                # save image
+                sup_img.save(save_sup_path)
+
+            state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
+
+            if state == ConversionState.failed_to_convert:
+                raise IOError("Superpixel couldn't be saved at the following path: " + str(save_sup_path))
+
+            return state
 
 
 def convert_single_rgb_to_superpixel(superpixel_path, img_ext='jpg', superpixel_method='fz', superpixel_arguments=None):
