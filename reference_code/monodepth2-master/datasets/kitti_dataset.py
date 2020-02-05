@@ -134,11 +134,11 @@ class SuperpixelDataset(KITTIDataset):
             try:
                 # try to use posix
                 # pure path will use unix or windows correct path depending on detected system
-                path = PurePath(path.replace("/", "\\"))
+                pos_path = PurePath(path.replace("/", "\\"))
 
-                path = path.as_posix()
+                pos_path = pos_path.as_posix()
 
-                super_file = np.load(path)
+                super_file = np.load(pos_path)
             except:
                 # do the necessary thing: create superpixel information
                 try:
