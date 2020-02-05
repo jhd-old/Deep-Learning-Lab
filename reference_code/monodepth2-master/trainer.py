@@ -494,6 +494,7 @@ class Trainer:
         return outputs
 
     def compute_normals_loss(self, superpixel, normals):
+
         """
         compute the loss with superpixel information.
         Forces normal vectors in one superpixel to be equal.
@@ -545,7 +546,7 @@ class Trainer:
 
         return normals_loss
 
-    def get_superpixel_mask_loss(self, disp, img,  superpixel , threshold = 0.045):
+    def get_superpixel_mask_loss_binary(self, disp, img,  superpixel , threshold = 0.045):
         """
         compute the loss with superpixel information.
         Takes the superpixel boundaries to mask the gradient of the disparity.
@@ -606,6 +607,64 @@ class Trainer:
         boundaries_x = boundaries_x.unsqueeze(0).unsqueeze(0)
         boundaries_y = boundaries_y.unsqueeze(0).unsqueeze(0)
         
+        grad_disp_x *= boundaries_x
+        grad_disp_y *= boundaries_y
+
+        return grad_disp_x.mean() + grad_disp_y.mean()
+
+    def get_superpixel_mask_loss_continuous(self, disp, img, superpixel):
+
+        """
+        compute the loss with superpixel information.
+        Takes the superpixel boundaries to mask the gradient of the disparity.
+        Assumes same Height and Width  aka. scale of disp and superpixel and img
+
+        :param superpixel: superpixel indices/labels
+        :param disp: disparity output from network
+        :param img: color output from network
+        :param threshold: gradient threshold
+        :return: superpixel loss
+
+        :TODO: finish implementation
+        """
+
+        # calculate gradient from disp in x/y - direction
+        # lenght is reduced by 1
+        grad_disp_x = torch.abs(disp[:, :, :, :-1] - disp[:, :, :, 1:])
+        grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
+
+        # calculate normal image gradient
+        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True).squeeze(0).squeeze(0)
+        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True).squeeze(0).squeeze(0)
+
+        # Calculate boundaries from SP-labels. Subpixel would be possible too. Would return double sized image.
+        # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
+        # boundaries = find_boundaries(superpixel, mode='outer')
+
+        # calculate x and y boundaries seperatly
+
+        # transform superpixel segments to tensor
+        # in shape (1,H,W)
+        labels = torch.tensor(superpixel).cuda().float()
+
+        # calculate gradient of the labels in x/y - direction & remove one dim
+        boundaries_x = torch.abs(labels[:, :, :-1] - labels[:, :, 1:]).squeeze(0)
+        boundaries_y = torch.abs(labels[:, :-1, :] - labels[:, 1:, :]).squeeze(0)
+
+        zero = torch.tensor([0]).cuda().float()
+        one = torch.tensor([1]).cuda().float()
+
+        # if inside SP --> 1, if at SP edge --> 0
+        # if the image gradient on an SP-edge is low --> its likely the same plane
+        # if same plane ---> set value to continuous value from smooth loss
+
+        boundaries_x = torch.where(boundaries_x == 0, one, torch.exp(-grad_img_x))
+        boundaries_y = torch.where(boundaries_y == 0, one, torch.exp(-grad_img_y))
+
+        # transform to tensor with shape (1,1,h,w)
+        boundaries_x = boundaries_x.unsqueeze(0).unsqueeze(0)
+        boundaries_y = boundaries_y.unsqueeze(0).unsqueeze(0)
+
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
 
@@ -738,11 +797,16 @@ class Trainer:
             mean_disp = disp.mean(2, True).mean(3, True)
             norm_disp = disp / (mean_disp + 1e-7)
 
-            if self.opt.superpixel_mask_loss:
+            if self.opt.superpixel_mask_loss_binary:
                 # get superpixel label data for current scale
                 superpixel = outputs["super_label", 0, scale]
+                smooth_loss = self.get_superpixel_mask_loss_binary(disp, color, superpixel)
 
-                smooth_loss = self.get_superpixel_mask_loss(disp,color,superpixel)
+            elif self.opt.superpixel_mask_loss_continuous:
+                # get superpixel label data for current scale
+                superpixel = outputs["super_label", 0, scale]
+                smooth_loss = self.get_superpixel_mask_loss_continuous(disp, color, superpixel)
+
             else:
                 smooth_loss = get_smooth_loss(norm_disp, color)
 
