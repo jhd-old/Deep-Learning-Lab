@@ -249,7 +249,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
 
     else:
         # check if its valid
-        if np.load(save_sup_path) is not None:
+        if np.load(save_sup_path)["x"] is not None:
             return ConversionState.already_converted
         else:
             # get folder name of the current image to retrieve saving path
@@ -266,25 +266,12 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
             # force superpixel to be unsigned 16bit integer
             sup = sup.astype(np.uint16)
 
-            if num_channel is 4:
-                # save superpixel in numpy archive
+            # save superpixel in numpy archive
 
-                save_sup_path = PurePath(save_sup_path).as_posix()
+            save_sup_path = PurePath(save_sup_path).as_posix()
 
-                # save superpixel information as uint16 in a compressed numpy archive
-                np.savez_compressed(save_sup_path, x=sup)
-
-            elif num_channel is 3 or num_channel is 6:
-                # save as image
-
-                # average over superpixel area
-                sup_img = avg_image(img, sup)
-
-                # convert numpy img back to PIL Image
-                sup_img = Image.fromarray(sup_img)
-
-                # save image
-                sup_img.save(save_sup_path)
+            # save superpixel information as uint16 in a compressed numpy archive
+            np.savez_compressed(save_sup_path, x=sup)
 
             state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
 
