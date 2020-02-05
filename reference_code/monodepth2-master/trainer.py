@@ -493,35 +493,50 @@ class Trainer:
         compute the loss with superpixel information.
         Forces normal vectors in one superpixel to be equal.
 
-        :param superpixel: superpixel indices
+        :param superpixel: superpixel labels
         :param normals: vector normals
-        :return: superpixel loss
+        :return: normals loss
 
-        :TODO: check implementation
+        :TODO: check implementation and input shapes
         """
 
         # init normals loss
         normals_loss = 0
 
-        # get indices
+        batch_size = normals.shape[0]
+        # shape of normals should be batchsize, 3, h, w
+
+        print("Normals shape in normals loss: {}".format(normals.shape))
+        print("Superpixel shape in normals loss: {}".format(superpixel.shape))
+
         superpixel_indices = torch.unique_consecutive(superpixel)
+        zeros = torch.zeros_like(normals)
 
-        # convert torch superpixel to numpy
-        superpixel_np = superpixel.detach().numpy()
+        for idx in superpixel_indices:
+            superpixel_list = torch.where(superpixel == idx, normals, zeros)
+            torch.std
 
-        # get pixel for each superpixel area
-        superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
+        for b in range(batch_size):
 
-        # convert torch normals to numpy
-        normals_np = normals.detach().numpy()
+            # get indices
+            superpixel_indices = torch.unique_consecutive(superpixel[b])
 
-        # get all normals pixel values per superpixel area
-        normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
+            # convert torch superpixel to numpy
+            superpixel_np = superpixel[b].detach().numpy()
 
-        for normals in normals_per_superpixel:
-            # calculate standard deviation for each area
-            # calculate first for each channel of current area, then sum for current area
-            normals_loss += np.sum(np.std(normals, axis=0))
+            # get pixel for each superpixel area
+            superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
+
+            # convert torch normals to numpy
+            normals_np = normals[b].detach().numpy()
+
+            # get all normals pixel values per superpixel area
+            normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
+
+            for normals in normals_per_superpixel:
+                # calculate standard deviation for each area
+                # calculate first for each channel of current area, then sum for current area
+                normals_loss += np.sum(np.std(normals, axis=0))
 
         return normals_loss
 

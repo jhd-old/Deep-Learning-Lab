@@ -132,7 +132,7 @@ class SuperpixelDataset(KITTIDataset):
             super_label = np.load(path)["x"].astype(np.int32)
 
         except:
-            #convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+            convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
             self.invalid_superpixel_paths += 1
             print("Warning: Couldn't load superpixel at {}".format(str(path)))
             print("Recalculating superpixel data! Occurred {} times!"
