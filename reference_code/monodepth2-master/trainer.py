@@ -138,6 +138,11 @@ class Trainer:
 
         # Check if superpixel dataset is used and create superpixel image
         if "superpixel" in self.opt.dataset or self.opt.superpixel_mask_loss or self.opt.normal_loss:
+
+            # force dataset to be kitti superpixel dataset
+            self.opt.dataset = "kitti_superpixel"
+            self.dataset = datasets_dict[self.opt.dataset]
+            
             # get number of channels to use for superpixel
             # 4 channel will use numpy array with superpixel indices
             # 3 channel will use only image averaged over superpixel area
