@@ -494,6 +494,7 @@ class Trainer:
         return outputs
 
     def compute_normals_loss(self, superpixel, normals):
+
         """
         compute the loss with superpixel information.
         Forces normal vectors in one superpixel to be equal.

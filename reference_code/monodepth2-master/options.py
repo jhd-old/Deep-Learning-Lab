@@ -90,7 +90,7 @@ class MonodepthOptions:
                                  default=0.1)
 
         ##############################################
-        # OLD EXTISTING ARGUMENTS (by Monodepth2)
+        # OLD EXISTING ARGUMENTS (by Monodepth2)
         ##############################################
 
         # PATHS
