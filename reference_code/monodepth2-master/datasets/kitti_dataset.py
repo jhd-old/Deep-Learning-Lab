@@ -129,10 +129,13 @@ class SuperpixelDataset(KITTIDataset):
         # it really should, but just to be safe
         try:
             # saved superpixel for key "x"
-            super_label = np.load(path)["x"].astype(np.int32)
+            if os.path.isfile(path):
+                super_label = np.load(path)["x"].astype(np.int32)
+            else:
+                raise IOError("No file at given path: {}!".format(str(path)))
 
         except:
-            raise IOError("Warning: Couldn't load superpixel at {}".format(str(path)))
+            raise IOError("Error while loading superpixel at {}".format(str(path)))
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
