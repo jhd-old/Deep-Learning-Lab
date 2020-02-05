@@ -137,7 +137,8 @@ class Trainer:
         img_ext = '.png' if self.opt.png else '.jpg'
 
         # Check if superpixel dataset is used and create superpixel image
-        if "superpixel" in self.opt.dataset or self.opt.superpixel_mask_loss or self.opt.normal_loss:
+        if "superpixel" in self.opt.dataset or self.opt.superpixel_mask_loss_binary or self.opt.normal_loss or \
+                self.opt.superpixel_mask_loss_continuous:
 
             # force dataset to be kitti superpixel dataset
             self.opt.dataset = "kitti_superpixel"
