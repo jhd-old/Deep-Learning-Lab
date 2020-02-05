@@ -506,10 +506,12 @@ class Trainer:
         sp_indices = torch.unique(superpixel)
         zeros = torch.zeros_like(normals)
 
-        for i in range(sp_indices):
-            sp = torch.where(superpixel == i, normals, zeros)
+        for i in sp_indices:
+            sp = torch.where(superpixel == i, normals, torch.tensor([np.nan]))
+
             # todo: mean only for valid indices
-            normals = torch.where(superpixel == i, torch.mean(), normals)
+            # try: x[~torch.isnan(x)].mean()
+            normals = torch.where(superpixel == i,  sp[~ torch.isnan(sp)].mean(), normals)
 
         return normals
 
