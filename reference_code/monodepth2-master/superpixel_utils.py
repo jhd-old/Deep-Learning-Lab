@@ -82,9 +82,14 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
         raise NotImplementedError("Length of given superpixel arguments is not implemented!")
 
     for path in paths:
-        convert_func(dataset_path, path, superpixel_method, superpixel_arguments, img_ext, path_insert, num_channel)
+        state = convert_func(dataset_path, path, superpixel_method, superpixel_arguments, img_ext, path_insert, num_channel)
 
-        converted += 1
+        if state == ConversionState.already_converted:
+            already_converted += 1
+        elif state == ConversionState.converted:
+            converted += 1
+        else:
+            raise IOError("Unknown conversion state!")
 
         if (already_converted + converted) % n_prints == 0:
             print("Converted {}/{} images to superpixel! {} were already converted.".format(converted,
