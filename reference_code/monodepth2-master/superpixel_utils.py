@@ -196,7 +196,7 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         raise NotImplementedError("Currently not supported!")
 
     # replace backslashes
-    save_sup_path = save_sup_path.replace("/", "\\")
+    save_sup_path = (save_sup_path + ".npz").replace("/", "\\")
 
     # check if already converted
     if not os.path.isfile(save_sup_path):
@@ -214,13 +214,10 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
         # force superpixel to be unsigned 16bit integer
         sup = sup.astype(np.uint16)
 
-        # create directory to be save
-        Path(save_sup_path).parent.mkdir(parents=True, exist_ok=True)
-
         if num_channel is 4:
             # save superpixel in numpy archive
 
-            save_sup_path = PurePath((save_sup_path + ".npz").replace("/", "\\")).as_posix()
+            save_sup_path = PurePath(save_sup_path).as_posix()
 
             # save superpixel information as uint16 in a compressed numpy archive
             np.savez_compressed(save_sup_path, x=sup)
@@ -238,26 +235,6 @@ def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arg
             sup_img.save(save_sup_path)
 
         state = ConversionState.converted if os.path.isfile(save_sup_path) else ConversionState.failed_to_convert
-
-        if num_channel is 4:
-            val = np.load(save_sup_path)["x"].astype(np.uint16)
-
-            if val is None:
-                state = ConversionState.failed_to_convert
-            else:
-                state = ConversionState.converted
-
-            del val
-
-        elif num_channel is 3 or num_channel is 6:
-            val = pil_loader(save_sup_path)
-
-            if val is None:
-                state = ConversionState.failed_to_convert
-            else:
-                state = ConversionState.converted
-
-            del val
 
         if state == ConversionState.failed_to_convert:
             raise IOError("Superpixel couldn't be saved at the following path: " + str(save_sup_path))
