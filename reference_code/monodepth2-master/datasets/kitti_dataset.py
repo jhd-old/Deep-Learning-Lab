@@ -143,12 +143,14 @@ class SuperpixelDataset(KITTIDataset):
                 # do the necessary thing: create superpixel information
                 try:
                     super_label = convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+                    super_label = super_label.astype(np.int32)
+                    super_file = None
                 except:
                     raise IOError("Error while loading superpixel path at " + str(path) + ". Tried to calculate online,"
                                                                                           " but failed!")
 
         try:
-            if super_label is not None:
+            if super_file is not None:
                 super_label = super_file["x"].astype(np.int32)
         except:
             raise IOError("Error while reading data of superpixel!")
