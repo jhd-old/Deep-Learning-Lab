@@ -132,14 +132,7 @@ class SuperpixelDataset(KITTIDataset):
             super_label = np.load(path)["x"].astype(np.int32)
 
         except:
-            convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
-            self.invalid_superpixel_paths += 1
-            print("Warning: Couldn't load superpixel at {}".format(str(path)))
-            print("Recalculating superpixel data! Occurred {} times!"
-                  .format(self.invalid_superpixel_paths))
-
-            # saved superpixel for key "x"
-            super_label = np.load(path)["x"].astype(np.int32)
+            raise IOError("Warning: Couldn't load superpixel at {}".format(str(path)))
 
         if channel is 3 or channel is 6:
             super_img = avg_image(img, super_label)
