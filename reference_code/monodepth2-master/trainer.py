@@ -525,14 +525,16 @@ class Trainer:
 
         return normals_loss
 
-    def get_superpixel_mask_loss(self, disp, superpixel):
+    def get_superpixel_mask_loss(self, disp, img,  superpixel , threshold = None):
         """
         compute the loss with superpixel information.
         Takes the superpixel boundaries to mask the gradient of the disparity.
-        Assumes same Height and Width  aka. scale of disp and superpixel
+        Assumes same Height and Width  aka. scale of disp and superpixel and img
 
         :param superpixel: superpixel indices/labels
         :param disp: disparity output from network
+        :param img: color output from network
+        :param threshold: gradient threshold
         :return: superpixel loss
 
         :TODO: finish implementation
@@ -543,6 +545,10 @@ class Trainer:
         grad_disp_x = torch.abs(disp[:, :, :, :-1] - disp[:, :, :, 1:])
         grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
 
+        #calculate normal image gradient
+        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True).squeeze(0).squeeze(0)
+        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True).squeeze(0).squeeze(0)
+
         # Calculate boundaries from SP-labels. Subpixel would be possible too. Would return double sized image.
         # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
         # boundaries = find_boundaries(superpixel, mode='outer')
@@ -552,28 +558,33 @@ class Trainer:
         #transform superpixel segments to tensor
         labels = torch.tensor(superpixel).cuda().float()
 
-        #calculate gradient of the labels in x/y - direction
-        # added new dimension cause superpixels in shape (1,H,W)
-        boundaries_x = torch.abs(labels[:,:, :-1] - labels[:,:, 1:])
-        boundaries_y = torch.abs(labels[:,:-1, :] - labels[:,1:, :])
+        #calculate gradient of the labels in x/y - direction & remove one dim
+
+        boundaries_x = torch.abs(labels[:,:, :-1] - labels[:,:, 1:]).squeeze(0)
+        boundaries_y = torch.abs(labels[:,:-1, :] - labels[:,1:, :]).squeeze(0)
 
         #array with ones
-        ones_x = torch.ones(boundaries_x.shape).cuda().float()
-        ones_y = torch.ones(boundaries_y.shape).cuda().float()
-        zeros_x = torch.zeros_like(boundaries_x).cuda().float()
-        zeros_y = torch.zeros_like(boundaries_y).cuda().float()
+        #ones_x = torch.ones(boundaries_x.shape).cuda().float()
+        #ones_y = torch.ones(boundaries_y.shape).cuda().float()
+        #zeros_x = torch.zeros_like(boundaries_x).cuda().float()
+        #zeros_y = torch.zeros_like(boundaries_y).cuda().float()
+
+        zero = torch.tensor([0]).cuda().float()
+        one = torch.tensor([1]).cuda().float()
 
         # if inside SP --> 1, if at edge --> 0
-        boundaries_x = torch.where(boundaries_x == 0,ones_x,zeros_x)
-        boundaries_y = torch.where(boundaries_y == 0,ones_y,zeros_y)
+        boundaries_x = torch.where(boundaries_x == 0,one,zero)
+        boundaries_y = torch.where(boundaries_y == 0,one,zero)
 
-        # convert True/False in 1/0 and invert
-        # boundaries have index 0
-        #boundaries = ~boundaries*1
+
+        # if the image gradient on an SP-edge is low --> its likely the same plane
+        # if same plane ---> remove SP edge, so set value to 1
+        boundaries_x = torch.where((boundaries_x == 0) & (grad_img_x < threshold) ,one, boundaries_x)
+        boundaries_y = torch.where((boundaries_y == 0) & (grad_img_y < threshold) ,one, boundaries_y)
 
         #transform to tensor with shape (1,1,h,w)
-        boundaries_x = boundaries_x.unsqueeze(0)
-        boundaries_y = boundaries_y.unsqueeze(0)
+        boundaries_x = boundaries_x.unsqueeze(0).unsqueeze(0)
+        boundaries_y = boundaries_y.unsqueeze(0).unsqueeze(0)
         
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
