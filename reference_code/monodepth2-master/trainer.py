@@ -529,13 +529,13 @@ class Trainer:
             superpixel_indices = torch.unique_consecutive(superpixel[b])
 
             # convert torch superpixel to numpy
-            superpixel_np = superpixel[b].detach().numpy()
+            superpixel_np = superpixel[b].cpu().detach().numpy()
 
             # get pixel for each superpixel area
             superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
 
             # convert torch normals to numpy
-            normals_np = normals[b].detach().numpy()
+            normals_np = normals[b].cpu().detach().numpy()
 
             # get all normals pixel values per superpixel area
             normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
