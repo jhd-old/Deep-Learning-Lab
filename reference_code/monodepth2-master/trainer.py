@@ -516,12 +516,12 @@ class Trainer:
         print("Normals shape in normals loss: {}".format(normals.shape))
         print("Superpixel shape in normals loss: {}".format(superpixel.shape))
 
-        superpixel_indices = torch.unique_consecutive(superpixel)
-        zeros = torch.zeros_like(normals)
+        #superpixel_indices = torch.unique_consecutive(superpixel)
+        #zeros = torch.zeros_like(normals)
 
-        for idx in superpixel_indices:
-            superpixel_list = torch.where(superpixel == idx, normals, zeros)
-            torch.std
+        #for idx in superpixel_indices:
+        #    superpixel_list = torch.where(superpixel == idx, normals, zeros)
+        #    torch.std
 
         for b in range(batch_size):
 
