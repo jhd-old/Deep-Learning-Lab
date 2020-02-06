@@ -534,8 +534,7 @@ class Trainer:
             # get pixel for each superpixel area
             superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
 
-            # convert torch normals to numpy
-            normals_np = normals[b].cpu().detach().numpy()
+            normals_np = normals[b]
 
             # get all normals pixel values per superpixel area
             normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
