@@ -800,12 +800,12 @@ class Trainer:
 
             if self.opt.superpixel_mask_loss_binary:
                 # get superpixel label data for current scale
-                superpixel = outputs["super_label", 0, scale]
+                superpixel = inputs["super_label", 0, scale]
                 smooth_loss = self.get_superpixel_mask_loss_binary(disp, color, superpixel)
 
             elif self.opt.superpixel_mask_loss_continuous:
                 # get superpixel label data for current scale
-                superpixel = outputs["super_label", 0, scale]
+                superpixel = inputs["super_label", 0, scale]
                 smooth_loss = self.get_superpixel_mask_loss_continuous(disp, color, superpixel)
 
             else:
