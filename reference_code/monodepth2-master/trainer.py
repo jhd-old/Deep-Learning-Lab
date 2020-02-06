@@ -526,7 +526,7 @@ class Trainer:
         for b in range(batch_size):
 
             # get indices
-            superpixel_indices = torch.unique_consecutive(superpixel[b])
+            superpixel_indices = torch.unique_consecutive(superpixel[b]).cpu().detach().numpy()
 
             # convert torch superpixel to numpy
             superpixel_np = superpixel[b].cpu().detach().numpy()
