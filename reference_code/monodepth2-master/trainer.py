@@ -819,7 +819,7 @@ class Trainer:
                 # need to be sure that superpixel dataset is used
                 if self.opt.dataset == "kitti_superpixel":
 
-                    superpixel = outputs[("super_label", 0, scale)]
+                    superpixel = inputs[("super_label", 0, scale)]
                     normals = outputs[("normal_vec", 0)]
                     loss += self.opt.normals_smoothness * self.compute_normals_loss(superpixel, normals) / (
                                 2 ** scale)
