@@ -539,7 +539,7 @@ class Trainer:
             # get all normals pixel values per superpixel area
             normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
 
-            print("all normals per superpixel:", normals_per_superpixel.shape)
+            print("all normals per superpixel:", len(normals_per_superpixel))
             for normals in normals_per_superpixel:
                 print("single normal per superpixel shape: ", normals.shape)
                 # calculate standard deviation for each area
