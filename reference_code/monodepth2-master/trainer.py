@@ -535,17 +535,20 @@ class Trainer:
             superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
 
             normals_np = normals[b]
-            print("normal in np per batch:", normals_np.shape)
+
             # get all normals pixel values per superpixel area
             normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
 
-            print("all normals per superpixel:", len(normals_per_superpixel))
             for normals in normals_per_superpixel:
                 print("single normal per superpixel shape: ", normals.shape)
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
-                normals_loss += np.sum(np.std(normals, axis=0))
-
+                try:
+                    normals_loss += np.sum(np.std(normals, axis=0))
+                except:
+                    print("normal in np per batch:", normals_np.shape)
+                    print("all normals per superpixel:", len(normals_per_superpixel))
+                    normals_loss = 0
         return normals_loss
 
     def get_superpixel_mask_loss_binary(self, disp, img,  superpixel , threshold = 0.045):
