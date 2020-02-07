@@ -534,6 +534,7 @@ class Trainer:
             # get pixel for each superpixel area
             superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
 
+            print("Number of indices: ", len(superpixel_indices), " == len of list ", len(superpixel_list))
             normals_np = normals[b]
 
             # get all normals pixel values per superpixel area
@@ -544,10 +545,10 @@ class Trainer:
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
                 try:
-                    normals = normals.reshape((normals.shpae[0], normals.shape[1] * normals.shape[2]))
+                    normals = normals.reshape((normals.shape[0], normals.shape[1] * normals.shape[2]))
                     normals_loss += np.sum(np.std(normals, axis=1))
                 except:
-                    print("normal in np per batch:", normals_np.shape)
+                    print("curent normal shape:", normals.shape)
                     print("all normals per superpixel:", len(normals_per_superpixel))
                     normals_loss = 0
         return normals_loss
