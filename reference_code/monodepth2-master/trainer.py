@@ -538,7 +538,7 @@ class Trainer:
             normals_np = normals[b]
 
             # get all normals pixel values per superpixel area
-            normals_per_superpixel = [normals_np[idx] for idx in superpixel_list]
+            normals_per_superpixel = [normals_np[idx-1] for idx in superpixel_list]
 
             for normals in normals_per_superpixel:
                 print("single normal per superpixel shape: ", normals.shape)
@@ -546,7 +546,7 @@ class Trainer:
                 # calculate first for each channel of current area, then sum for current area
                 try:
                     normals = normals.reshape((normals.shape[0], normals.shape[1] * normals.shape[2]))
-                    normals_loss += np.sum(np.std(normals, axis=1))
+                    normals_loss += np.sum(np.std(normals, axis=(0, 1)))
                 except:
                     print("curent normal shape:", normals.shape)
                     print("all normals per superpixel:", len(normals_per_superpixel))
