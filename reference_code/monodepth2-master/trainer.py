@@ -503,8 +503,6 @@ class Trainer:
         :param superpixel: superpixel labels
         :param normals: vector normals
         :return: normals loss
-
-        :TODO: check implementation and input shapes
         """
 
         # init normals loss
@@ -513,56 +511,33 @@ class Trainer:
         batch_size = normals.shape[0]
         # shape of normals should be batchsize, 3, h, w
 
-        print("Normals shape in normals loss: {}".format(normals.shape))
-        print("Superpixel shape in normals loss: {}".format(superpixel.shape))
-
-        #superpixel_indices = torch.unique_consecutive(superpixel)
-        #zeros = torch.zeros_like(normals)
-
-        #for idx in superpixel_indices:
-        #    superpixel_list = torch.where(superpixel == idx, normals, zeros)
-        #    torch.std
-
         for b in range(batch_size):
 
             # get indices
             superpixel_indices = torch.unique(superpixel[b]).cpu().detach().numpy()
 
-            print("Indices: ", superpixel_indices)
             # convert torch superpixel to numpy
             superpixel_np = superpixel[b].cpu().detach().numpy()
-            superpixel_np = superpixel_np.reshape((superpixel_np.shape[0], superpixel_np.shape[1] *
-                                                   superpixel_np.shape[2]))
+            superpixel_np = superpixel_np.reshape((superpixel_np.shape[1] * superpixel_np.shape[2]))
 
             # get pixel for each superpixel area
-            superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
-            print("Coordinates for Indices: ", superpixel_list)
-
-            print("Number of indices: ", len(superpixel_indices), " len of list ", len(superpixel_list), "pixel count:",
-                  superpixel_np.shape[0] * superpixel_np.shape[1])
+            superpixel_list = np.squeeze([np.where(superpixel_np == i) for i in superpixel_indices])
 
             normals_np = normals[b]
+            normals_flat = normals_np[:].reshape((normals_np.shape[0], normals_np.shape[1] * normals_np.shape[2]))
 
             # get all normals pixel values per superpixel area
-            normals_per_superpixel = [normals_np[pixel] for pixel in superpixel_list]
+            normals_per_superpixel = [normals_flat[:, idx] for idx in superpixel_list]
 
-            for normals in normals_per_superpixel:
-                print("single normal per superpixel shape: ", normals.shape)
+            for normals_in_one_superpixel_area in normals_per_superpixel:
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
-                try:
-                    print("curent normal shape:", normals.shape[0])
-                    normals_flat = normals[:].reshape((normals.shape[0], normals.shape[1] * normals.shape[2]))
-                    print("creshaped normal shape:", normals_flat.shape[0])
-                    normals_loss += np.sum(np.std(normals_flat, axis=(0, 1)))
-                except:
-                    print("curent normal shape:", normals.shape[0])
-                    print("all normals per superpixel:", len(normals_per_superpixel))
 
-                    normals_loss = 0
+                normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
+
         return normals_loss
 
-    def get_superpixel_mask_loss_binary(self, disp, img,  superpixel , threshold = 0.045):
+    def get_superpixel_mask_loss_binary(self, disp, img,  superpixel, threshold=0.045):
         """
         compute the loss with superpixel information.
         Takes the superpixel boundaries to mask the gradient of the disparity.
@@ -820,16 +795,10 @@ class Trainer:
             # add addtional superpixel loss if selected
             if self.opt.normal_loss:
 
-                # need to be sure that superpixel dataset is used
-                if self.opt.dataset == "kitti_superpixel":
-
-                    superpixel = inputs[("super_label", 0, scale)]
-                    normals = outputs[("normal_vec", 0)]
-                    loss += self.opt.normals_smoothness * self.compute_normals_loss(superpixel, normals) / (
+                superpixel = inputs[("super_label", 0, scale)]
+                normals = outputs[("normal_vec", 0)]
+                loss += self.opt.normals_smoothness * self.compute_normals_loss(superpixel, normals) / (
                                 2 ** scale)
-
-                else:
-                    print("Warning: superpixel loss cant be used, because superpixel dataset isn't selected!")
 
             total_loss += loss
             losses["loss/{}".format(scale)] = loss
