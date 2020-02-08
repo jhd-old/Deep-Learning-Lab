@@ -523,7 +523,7 @@ class Trainer:
             # get pixel for each superpixel area
             superpixel_list = np.squeeze([np.where(superpixel_np == i) for i in superpixel_indices])
 
-            normals_np = normals[b]
+            normals_np = normals[b].cpu().detach().numpy()
 
             # shape from (3, h, w) to (3, h * w)
             normals_flat = normals_np[:].reshape((normals_np.shape[0], normals_np.shape[1] * normals_np.shape[2]))
