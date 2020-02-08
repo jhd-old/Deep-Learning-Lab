@@ -524,16 +524,21 @@ class Trainer:
             superpixel_list = np.squeeze([np.where(superpixel_np == i) for i in superpixel_indices])
 
             normals_np = normals[b]
+
+            # shape from (3, h, w) to (3, h * w)
             normals_flat = normals_np[:].reshape((normals_np.shape[0], normals_np.shape[1] * normals_np.shape[2]))
 
             # get all normals pixel values per superpixel area
             normals_per_superpixel = [normals_flat[:, idx] for idx in superpixel_list]
 
-            for normals_in_one_superpixel_area in normals_per_superpixel:
+            for i, normals_in_one_superpixel_area in enumerate(normals_per_superpixel):
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
-
-                normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
+                try:
+                    normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
+                except TypeError:
+                    print("Occured at ", i)
+                    print(normals_in_one_superpixel_area.shape)
 
         return normals_loss
 
