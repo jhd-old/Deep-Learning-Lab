@@ -291,8 +291,9 @@ class MonoDataset(data.Dataset):
         if self.use_superpixel:
             self.preprocess_superpixel(inputs, color_aug)
 
-            if self.opt.input_channels is not 3:
-                self.preprocess(inputs, color_aug)
+            # TODO: Temporarly not possible to use only superpixel iamge as input
+            #if self.opt.input_channels is not 3:
+            self.preprocess(inputs, color_aug)
 
         else:
             self.preprocess(inputs, color_aug)

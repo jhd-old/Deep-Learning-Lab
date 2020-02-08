@@ -156,7 +156,9 @@ class SuperpixelDataset(KITTIDataset):
         except:
             raise IOError("Error while reading data of superpixel!")
 
-        if channel is 3 or channel is 6:
+        # TODO: Temporarly not possible to use only superpixel iamge as input
+        #if channel is 3 or channel is 6:
+        if channel is 6:
             super_img = avg_image(img, super_label)
 
             # convert label to pillow image
