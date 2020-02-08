@@ -528,13 +528,19 @@ class Trainer:
             # get indices
             superpixel_indices = torch.unique(superpixel[b]).cpu().detach().numpy()
 
+            print("Indices: ", superpixel_indices)
             # convert torch superpixel to numpy
             superpixel_np = superpixel[b].cpu().detach().numpy()
+            superpixel_np = superpixel_np.reshape((superpixel_np.shape[0], superpixel_np.shape[1] *
+                                                   superpixel_np.shape[2]))
 
             # get pixel for each superpixel area
             superpixel_list = [np.where(superpixel_np == i) for i in superpixel_indices]
+            print("Coordinates for Indices: ", superpixel_list)
 
-            print("Number of indices: ", len(superpixel_indices), " == len of list ", len(superpixel_list))
+            print("Number of indices: ", len(superpixel_indices), " len of list ", len(superpixel_list), "pixel count:",
+                  superpixel_np.shape[0] * superpixel_np.shape[1])
+
             normals_np = normals[b]
 
             # get all normals pixel values per superpixel area
@@ -552,7 +558,7 @@ class Trainer:
                 except:
                     print("curent normal shape:", normals.shape[0])
                     print("all normals per superpixel:", len(normals_per_superpixel))
-                    
+
                     normals_loss = 0
         return normals_loss
 
