@@ -534,11 +534,8 @@ class Trainer:
             for i, normals_in_one_superpixel_area in enumerate(normals_per_superpixel):
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
-                try:
-                    normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
-                except TypeError:
-                    print("Occured at ", i)
-                    print(normals_in_one_superpixel_area.shape)
+
+                normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
 
         return normals_loss
 

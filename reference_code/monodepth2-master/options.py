@@ -87,7 +87,7 @@ class MonodepthOptions:
         self.parser.add_argument("--normals_smoothness",
                                  type=float,
                                  help="factor to add normals loss weighted to the total loss",
-                                 default=0.01)
+                                 default=0.0005)
 
         ##############################################
         # OLD EXISTING ARGUMENTS (by Monodepth2)
