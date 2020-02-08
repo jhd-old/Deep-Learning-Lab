@@ -199,15 +199,13 @@ class MonoDataset(data.Dataset):
                 # check if superpixel input is needed
                 if self.use_superpixel:
                     if self.opt.input_channels is 3:
-                        # only use if kitti superpixel dataset is choosen
-                        # dont choose if superpixel are only used for the loss
-                        if self.opt.dataset == "kitti_superpixel":
-                            sup_channel = 3
-                            color = None
-                        else:
-                            sup_channel = 1
-                            color = self.get_color(folder, frame_index, other_side, do_flip)
-                            
+                        # TODO: Temporarly not possible to use only superpixel iamge as input
+                        #sup_channel = 3
+                        #color = None
+
+                        sup_channel = 1
+                        color = self.get_color(folder, frame_index, other_side, do_flip)
+
                     elif self.opt.input_channels is 4:
                         sup_channel = 1
                         color = self.get_color(folder, frame_index, other_side, do_flip)
@@ -239,15 +237,12 @@ class MonoDataset(data.Dataset):
                 # check if superpixel input is needed
                 if self.use_superpixel:
                     if self.opt.input_channels is 3:
+                        # TODO: Temporarly not possible to use only superpixel iamge as input
+                        # sup_channel = 3
+                        # color = None
 
-                        # only use if kitti superpixel dataset is choosen
-                        # dont choose if superpixel are only used for the loss
-                        if self.opt.dataset == "kitti_superpixel":
-                            sup_channel = 3
-                            color = None
-                        else:
-                            sup_channel = 1
-                            color = self.get_color(folder, frame_index + i, side, do_flip)
+                        sup_channel = 1
+                        color = self.get_color(folder, frame_index + i, side, do_flip)
                     elif self.opt.input_channels is 4:
                         sup_channel = 1
                         color = self.get_color(folder, frame_index + i, side, do_flip)
