@@ -513,6 +513,69 @@ class Trainer:
 
         batch_size = normals.shape[0]
         # shape of normals should be batchsize, 3, h, w
+        # shape of superpixel should be batchsize, 1, h, w
+
+        # get indices
+        superpixel_indices = torch.unique(superpixel, dim=0).cuda()
+
+        # change shape from batchsize, 1, h, w to batchsize, 1, h * w
+        superpixel = superpixel.view(superpixel.shape[0], superpixel.shape[1], superpixel.shape[2] * superpixel.shape[3])
+
+        # get pixel for each superpixel area
+        zeros = torch.zeros_like(superpixel).cuda()
+
+        all_coords = []
+
+        for i in superpixel_indices:
+            # set all pixel which are not at current index to zero
+            coords = torch.where(superpixel == torch.ones_like(superpixel) * i, superpixel, zeros).cuda()
+
+            # get all nonzero coordinates
+            coords = torch.nonzero(coords, as_tuple=True)
+
+            # shape is batchsize, length
+            # convert to batchsize, 1, length to be able to stack on dim 1
+            coords = torch.unsqueeze(coords, dim=1)
+
+            # add current tensor to list
+            all_coords.append(coords)
+
+        # stack all tensors in the list on dim=1
+        coords_tensor = torch.stack(all_coords, dim=1).cuda()
+
+        # shape from (batch, 3, h, w) to (batch, 3, h * w)
+        normals = normals.view(normals.shape[0], normals.shape[1], normals.shape[2] * normals.shape[3])
+
+        # get all normals pixel values per superpixel area
+        normals_per_superpixel = torch.gather(normals, 2, coords_tensor)
+        # normals_per_superpixel = torch.tensor([normals[:, idx] for idx in coords])
+
+        std = torch.std(normals_per_superpixel)
+            for normals_in_one_superpixel_area in normals_per_superpixel:
+                # calculate standard deviation for each area
+                # calculate first for each channel of current area, then sum for current area
+
+                std = torch.std()
+                normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
+
+        return normals_loss
+
+    def compute_normals_loss_np(self, superpixel, normals):
+
+        """
+        compute the loss with superpixel information.
+        Forces normal vectors in one superpixel to be equal.
+
+        :param superpixel: superpixel labels
+        :param normals: vector normals
+        :return: normals loss
+        """
+
+        # init normals loss
+        normals_loss = 0
+
+        batch_size = normals.shape[0]
+        # shape of normals should be batchsize, 3, h, w
 
         for b in range(batch_size):
 
