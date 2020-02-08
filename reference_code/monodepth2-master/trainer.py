@@ -526,7 +526,7 @@ class Trainer:
         for b in range(batch_size):
 
             # get indices
-            superpixel_indices = torch.unique_consecutive(superpixel[b]).cpu().detach().numpy()
+            superpixel_indices = torch.unique(superpixel[b]).cpu().detach().numpy()
 
             # convert torch superpixel to numpy
             superpixel_np = superpixel[b].cpu().detach().numpy()
@@ -545,11 +545,14 @@ class Trainer:
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
                 try:
+                    print("curent normal shape:", normals.shape[0])
                     normals_flat = normals[:].reshape((normals.shape[0], normals.shape[1] * normals.shape[2]))
+                    print("creshaped normal shape:", normals_flat.shape[0])
                     normals_loss += np.sum(np.std(normals_flat, axis=(0, 1)))
                 except:
-                    print("curent normal shape:", normals.shape)
+                    print("curent normal shape:", normals.shape[0])
                     print("all normals per superpixel:", len(normals_per_superpixel))
+                    print("creshaped normal shape:", normals_flat.shape[0])
                     normals_loss = 0
         return normals_loss
 
