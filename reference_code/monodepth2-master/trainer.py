@@ -574,8 +574,8 @@ class Trainer:
         grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
 
         # calculate normal image gradient
-        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True).squeeze(0).squeeze(0)
-        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True).squeeze(0).squeeze(0)
+        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True)
+        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True)
 
         # Calculate boundaries from SP-labels. Subpixel would be possible too. Would return double sized image.
         # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
@@ -584,12 +584,12 @@ class Trainer:
         # calculate x and y boundaries seperatly
 
         # transform superpixel segments to tensor
-        # in shape (1,H,W)
-        labels = torch.tensor(superpixel).cuda().float()
+        # in shape (bs,1,H,W)
+        labels = superpixel.float()
 
         # calculate gradient of the labels in x/y - direction & remove one dim
-        boundaries_x = torch.abs(labels[:,:, :-1] - labels[:,:, 1:]).squeeze(0)
-        boundaries_y = torch.abs(labels[:,:-1, :] - labels[:,1:, :]).squeeze(0)
+        boundaries_x = torch.abs(labels[:,:,:, :-1] - labels[:,:,:, 1:])
+        boundaries_y = torch.abs(labels[:,:,:-1, :] - labels[:,:,1:, :])
 
         # array with ones
         # ones_x = torch.ones(boundaries_x.shape).cuda().float()
@@ -610,10 +610,6 @@ class Trainer:
         boundaries_x = torch.where((boundaries_x == 0) & (grad_img_x < threshold), one, boundaries_x)
         boundaries_y = torch.where((boundaries_y == 0) & (grad_img_y < threshold), one, boundaries_y)
 
-        # transform to tensor with shape (1,1,h,w)
-        boundaries_x = boundaries_x.unsqueeze(0).unsqueeze(0)
-        boundaries_y = boundaries_y.unsqueeze(0).unsqueeze(0)
-        
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
 
@@ -641,24 +637,21 @@ class Trainer:
         grad_disp_y = torch.abs(disp[:, :, :-1, :] - disp[:, :, 1:, :])
 
         # calculate normal image gradient
-        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True).squeeze(0).squeeze(0)
-        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True).squeeze(0).squeeze(0)
+        grad_img_x = torch.mean(torch.abs(img[:, :, :, :-1] - img[:, :, :, 1:]), 1, keepdim=True)
+        grad_img_y = torch.mean(torch.abs(img[:, :, :-1, :] - img[:, :, 1:, :]), 1, keepdim=True)
 
         # Calculate boundaries from SP-labels. Subpixel would be possible too. Would return double sized image.
         # https://github.com/scikit-image/scikit-image/blob/master/skimage/segmentation/boundaries.py#L48
         # boundaries = find_boundaries(superpixel, mode='outer')
 
-        # calculate x and y boundaries seperatly
-
         # transform superpixel segments to tensor
-        # in shape (1,H,W)
-        labels = torch.tensor(superpixel).cuda().float()
+        # in shape (1,1,H,W)
+        labels = superpixel.float()
 
         # calculate gradient of the labels in x/y - direction & remove one dim
-        boundaries_x = torch.abs(labels[:, :, :-1] - labels[:, :, 1:]).squeeze(0)
-        boundaries_y = torch.abs(labels[:, :-1, :] - labels[:, 1:, :]).squeeze(0)
+        boundaries_x = torch.abs(labels[:,:, :, :-1] - labels[:,:,:, 1:])
+        boundaries_y = torch.abs(labels[:,:,:-1, :] - labels[:,:,1:, :])
 
-        zero = torch.tensor([0]).cuda().float()
         one = torch.tensor([1]).cuda().float()
 
         # if inside SP --> 1, if at SP edge --> 0
@@ -667,10 +660,6 @@ class Trainer:
 
         boundaries_x = torch.where(boundaries_x == 0, one, torch.exp(-grad_img_x))
         boundaries_y = torch.where(boundaries_y == 0, one, torch.exp(-grad_img_y))
-
-        # transform to tensor with shape (1,1,h,w)
-        boundaries_x = boundaries_x.unsqueeze(0).unsqueeze(0)
-        boundaries_y = boundaries_y.unsqueeze(0).unsqueeze(0)
 
         grad_disp_x *= boundaries_x
         grad_disp_y *= boundaries_y
