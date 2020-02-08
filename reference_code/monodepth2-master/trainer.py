@@ -552,7 +552,7 @@ class Trainer:
                 except:
                     print("curent normal shape:", normals.shape[0])
                     print("all normals per superpixel:", len(normals_per_superpixel))
-                    print("creshaped normal shape:", normals_flat.shape[0])
+                    
                     normals_loss = 0
         return normals_loss
 
