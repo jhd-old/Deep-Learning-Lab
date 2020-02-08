@@ -262,9 +262,10 @@ class MonoDataset(data.Dataset):
                     if super_img is not None:
                         inputs[("super_img", i, -1)] = super_img
 
-                    if self.opt.input_channels is not 3:
+                    # TODO: Temporarly not possible to use only superpixel iamge as input
+                    #if self.opt.input_channels is not 3:
                         # if num input channels is 3 and superpixels should be used, dont load normal image
-                        inputs[("color", i, -1)] = color
+                    inputs[("color", i, -1)] = color
 
                 else:
                     # if we dont use superpixel just load normal image

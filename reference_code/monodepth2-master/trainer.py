@@ -311,8 +311,7 @@ class Trainer:
 
                     # TODO: Temporarly not possible to use only superpixel iamge as input
                     #inp = inputs["super_img_aug", 0, 0]
-                    
-                    image = inputs["color_aug", 0, 0]
+                    inp = inputs["color_aug", 0, 0]
 
                 elif self.opt.input_channels is 6:
                     # use 3 channel superpixel and 3 channel standard rgb image
