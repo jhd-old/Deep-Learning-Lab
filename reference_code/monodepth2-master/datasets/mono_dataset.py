@@ -198,15 +198,8 @@ class MonoDataset(data.Dataset):
 
                 # check if superpixel input is needed
                 if self.use_superpixel:
-                    if self.opt.input_channels is 3:
-                        # TODO: Temporarly not possible to use only superpixel iamge as input
-                        #sup_channel = 3
-                        #color = None
 
-                        sup_channel = 1
-                        color = self.get_color(folder, frame_index, other_side, do_flip)
-
-                    elif self.opt.input_channels is 4:
+                    if self.opt.input_channels is 3 or self.opt.input_channels is 4:
                         sup_channel = 1
                         color = self.get_color(folder, frame_index, other_side, do_flip)
                     elif self.opt.input_channels is 6:
@@ -236,14 +229,8 @@ class MonoDataset(data.Dataset):
             else:
                 # check if superpixel input is needed
                 if self.use_superpixel:
-                    if self.opt.input_channels is 3:
-                        # TODO: Temporarly not possible to use only superpixel iamge as input
-                        # sup_channel = 3
-                        # color = None
 
-                        sup_channel = 1
-                        color = self.get_color(folder, frame_index + i, side, do_flip)
-                    elif self.opt.input_channels is 4:
+                    if self.opt.input_channels is 3 or self.opt.input_channels is 4:
                         sup_channel = 1
                         color = self.get_color(folder, frame_index + i, side, do_flip)
                     elif self.opt.input_channels is 6:
@@ -262,9 +249,6 @@ class MonoDataset(data.Dataset):
                     if super_img is not None:
                         inputs[("super_img", i, -1)] = super_img
 
-                    # TODO: Temporarly not possible to use only superpixel iamge as input
-                    #if self.opt.input_channels is not 3:
-                        # if num input channels is 3 and superpixels should be used, dont load normal image
                     inputs[("color", i, -1)] = color
 
                 else:
@@ -292,12 +276,7 @@ class MonoDataset(data.Dataset):
         if self.use_superpixel:
             self.preprocess_superpixel(inputs, color_aug)
 
-            # TODO: Temporarly not possible to use only superpixel iamge as input
-            #if self.opt.input_channels is not 3:
-            self.preprocess(inputs, color_aug)
-
-        else:
-            self.preprocess(inputs, color_aug)
+        self.preprocess(inputs, color_aug)
 
         for i in self.frame_idxs:
 
@@ -306,13 +285,10 @@ class MonoDataset(data.Dataset):
 
                 if "super_img" in inputs.keys():
                     del inputs[("super_img", i, -1)]
+                    del inputs[("super_img_aug", i, -1)]
 
-                if self.opt.input_channels is not 3:
-                    del inputs[("color", i, -1)]
-                    del inputs[("color_aug", i, -1)]
-            else:
-                del inputs[("color", i, -1)]
-                del inputs[("color_aug", i, -1)]
+            del inputs[("color", i, -1)]
+            del inputs[("color_aug", i, -1)]
 
         if self.load_depth:
             depth_gt = self.get_depth(folder, frame_index, side, do_flip)

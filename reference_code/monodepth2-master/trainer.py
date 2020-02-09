@@ -309,8 +309,6 @@ class Trainer:
                 elif self.opt.input_channels is 3:
                     # use only superpixel 3 channel input
 
-                    # TODO: Temporarly not possible to use only superpixel iamge as input
-                    #inp = inputs["super_img_aug", 0, 0]
                     inp = inputs["color_aug", 0, 0]
 
                 elif self.opt.input_channels is 6:
