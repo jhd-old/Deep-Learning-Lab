@@ -13,6 +13,7 @@ import normal2disp as nd
 from layers import disp_to_depth
 from options import MonodepthOptions
 from utils import readlines
+from superpixel_utils import convert_rgb_to_superpixel
 
 cv2.setNumThreads(0)  # This speeds up evaluation 5x on our unix systems (OpenCV 3.3.1)
 
@@ -80,8 +81,26 @@ def evaluate(opt):
 
         encoder_dict = torch.load(encoder_path)
 
-        if opt.dataset == "kitti_superpixel" or opt.superpixel_mask_loss_binary or opt.normal_loss or \
+        # Check if superpixel dataset is used and create superpixel image
+        if "superpixel" in opt.dataset or opt.superpixel_mask_loss_binary or opt.normal_loss or \
                 opt.superpixel_mask_loss_continuous:
+
+            # get number of channels to use for superpixel
+            # 4 channel will use numpy array with superpixel indices
+            # 3 channel will use rgb and put superpixel in dictionary. Can be used eg. in loss
+            # 6 channel will use normal image + image averaged over superpixel area
+
+            num_sup_channels = opt.input_channels
+            print("Using {} channel input.".format(num_sup_channels))
+
+            if opt.no_superpixel_check:
+                # dont check if superpixel information is correct
+                print("Warning: Skip checking superpixel information.")
+
+            else:
+                print("Start converting training images to superpixel.")
+                convert_rgb_to_superpixel(opt.data_path, filenames, opt.superpixel_method,
+                                          opt.superpixel_arguments, img_ext=opt.img_ext, num_channel=num_sup_channels)
 
             dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
                                                  encoder_dict['height'], encoder_dict['width'],
