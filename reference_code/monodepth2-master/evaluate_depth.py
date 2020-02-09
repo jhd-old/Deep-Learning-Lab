@@ -100,7 +100,7 @@ def evaluate(opt):
                 print("Warning: Skip checking superpixel information.")
 
             else:
-                print("Start converting training images to superpixel.")
+                print("Start converting test images to superpixel.")
                 convert_rgb_to_superpixel(opt.data_path, filenames, opt.superpixel_method,
                                           opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
 
