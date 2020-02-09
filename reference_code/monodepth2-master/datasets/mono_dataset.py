@@ -219,9 +219,8 @@ class MonoDataset(data.Dataset):
                     if super_img is not None:
                         inputs[("super_img", i, -1)] = super_img
 
-                    if self.opt.input_channels is not 3:
-                        # dont add color when we only want to use superpixel
-                        inputs[("color", i, -1)] = color
+                    # dont add color when we only want to use superpixel
+                    inputs[("color", i, -1)] = color
                 else:
                     # if we dont use superpixel just load normal image
                     inputs[("color", i, -1)] = self.get_color(folder, frame_index, other_side, do_flip)
@@ -283,7 +282,7 @@ class MonoDataset(data.Dataset):
             if self.use_superpixel:
                 del inputs[("super_label", i, -1)]
 
-                if "super_img" in inputs.keys():
+                if self.opt.input_channels is 6:
                     del inputs[("super_img", i, -1)]
                     del inputs[("super_img_aug", i, -1)]
 
