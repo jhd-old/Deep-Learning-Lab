@@ -157,10 +157,16 @@ class SuperpixelDataset(KITTIDataset):
             raise IOError("Error while reading data of superpixel!")
 
         if channel is 3:
-            super_img = avg_image(img, super_label)
+            # need to convert image from pil to numpy first
+            img_np = np.array(img)
+
+            super_img = avg_image(img_np, super_label)
 
             # convert label to pillow image
             super_img = transforms.ToPILImage()(super_img)
+
+            # be sure to delete img_np
+            del img_np
 
         else:
             super_img = None
