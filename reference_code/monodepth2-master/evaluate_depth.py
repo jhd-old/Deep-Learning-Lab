@@ -83,7 +83,7 @@ def evaluate(opt):
 
         # Check if superpixel dataset is used and create superpixel image
         if "superpixel" in opt.dataset or opt.superpixel_mask_loss_binary or opt.normal_loss or \
-                opt.superpixel_mask_loss_continuous:
+                opt.superpixel_mask_loss_continuous or opt.input_channels is 4 or opt.input_channels is 6:
 
             # get number of channels to use for superpixel
             # 4 channel will use numpy array with superpixel indices
