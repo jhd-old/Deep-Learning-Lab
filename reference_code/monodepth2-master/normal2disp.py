@@ -16,7 +16,7 @@ def normals_to_disp3(inv_K, normal):
 
     ## get size of tensor
     batch_size, _, h, w = normal.size()
-    inv_K = inv_K[0, 0:3, 0:3]
+    inv_K = inv_K[0, 0:3, 0:3].cuda()
 
     # get 3D homogenous pixel coordinate
     pixelgrid = get_pixelgrid(batch_size, h, w)
