@@ -238,7 +238,7 @@ class MonoDataset(data.Dataset):
                     else:
                         raise NotImplementedError
 
-                    super_label, super_img = self.get_superpixel(folder, frame_index + 1, side, do_flip, img=color,
+                    super_label, super_img = self.get_superpixel(folder, frame_index + i, side, do_flip, img=color,
                                                                    channel=sup_channel,
                                                                    method=self.opt.superpixel_method,
                                                                    arguments=self.opt.superpixel_arguments,
