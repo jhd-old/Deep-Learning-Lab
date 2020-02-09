@@ -547,11 +547,11 @@ class Trainer:
         normals = normals.view(normals.shape[0], normals.shape[1], normals.shape[2] * normals.shape[3])
 
         # get all normals pixel values per superpixel area
-        normals_per_superpixel = torch.gather(normals, 2, coords_tensor)
-        # normals_per_superpixel = torch.tensor([normals[:, idx] for idx in coords])
+        #normals_per_superpixel = torch.gather(normals, 2, coords_tensor)
+        #normals_per_superpixel = torch.tensor([normals[:, idx] for idx in coords])
 
         #std = torch.std(normals_per_superpixel)
-        #    for normals_in_one_superpixel_area in normals_per_superpixel:
+        #for normals_in_one_superpixel_area in normals_per_superpixel:
                 # calculate standard deviation for each area
                 # calculate first for each channel of current area, then sum for current area
 
@@ -560,7 +560,7 @@ class Trainer:
 
         return normals_loss
 
-    def compute_normals_loss_np(self, superpixel, normals):
+    def compute_normals_loss_np(self, superpixel, normals, use_centroid=False):
 
         """
         compute the loss with superpixel information.

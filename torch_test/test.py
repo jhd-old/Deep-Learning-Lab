@@ -50,7 +50,7 @@ def compute_normals_loss(superpixel, normals):
         # add current tensor to list
         all_coords.append(coords)
 
-        normals_per_superpixel = torch.masked_select(normals[:, :], )
+        normals_per_superpixel = torch.masked_select(normals[:, :], coords)
 
     # stack all tensors in the list on dim=1
     # --> shape will be (batchsize, superpixel_index, h*w)
@@ -62,14 +62,14 @@ def compute_normals_loss(superpixel, normals):
 
     test = torch.nonzero(coords_tensor)
 
-    for j in range(coords_tensor.shape[1]):
-        indices = coords_tensor[:, j]
+    #for j in range(coords_tensor.shape[1]):
+    #    indices = coords_tensor[:, j]
 
-        # get all normals pixel values per superpixel area
-        normals_per_superpixel = torch.masked_select(normals[:, :], indices)
+    #    # get all normals pixel values per superpixel area
+    #    normals_per_superpixel = torch.masked_select(normals[:, :], indices)
 
 
-    # normals_per_superpixel = torch.tensor([normals[:, idx] for idx in coords])
+    normals_per_superpixel = torch.tensor([normals[:, idx] for idx in coords])
 
     std = torch.std(normals_per_superpixel)
     for normals_in_one_superpixel_area in normals_per_superpixel:

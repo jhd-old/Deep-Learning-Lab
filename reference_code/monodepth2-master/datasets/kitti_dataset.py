@@ -147,8 +147,8 @@ class SuperpixelDataset(KITTIDataset):
                     super_label = super_label.astype(np.int32)
                     super_file = None
                 except:
-                    raise IOError("Error while loading superpixel path at " + str(path) + ". Tried to calculate online,"
-                                                                                          " but failed!")
+                    raise IOError("Error while loading superpixel path at " + str(path) +
+                                  ". Tried to calculate online, but failed for image:" + str(path))
 
         try:
             if super_file is not None:
