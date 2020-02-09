@@ -66,6 +66,8 @@ def evaluate(opt):
     assert sum((opt.eval_mono, opt.eval_stereo)) == 1, \
         "Please choose mono or stereo evaluation by setting either --eval_mono or --eval_stereo"
 
+    img_ext = '.png' if opt.png else '.jpg'
+
     if opt.ext_disp_to_eval is None:
 
         opt.load_weights_folder = os.path.expanduser(opt.load_weights_folder)
@@ -100,7 +102,7 @@ def evaluate(opt):
             else:
                 print("Start converting training images to superpixel.")
                 convert_rgb_to_superpixel(opt.data_path, filenames, opt.superpixel_method,
-                                          opt.superpixel_arguments, img_ext=opt.img_ext, num_channel=num_sup_channels)
+                                          opt.superpixel_arguments, img_ext=img_ext, num_channel=num_sup_channels)
 
             dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
                                                  encoder_dict['height'], encoder_dict['width'],
