@@ -244,6 +244,9 @@ class Trainer:
         print("Training")
         self.set_train()
 
+        if self.opt.input_channel is 6:
+            raise IOError("Test")
+
         for batch_idx, inputs in enumerate(self.train_loader):
 
             before_op_time = time.time()
@@ -318,8 +321,6 @@ class Trainer:
                     image = inputs["color_aug", 0, 0]
                     superpixel = inputs["super_img_aug", 0, 0]
                     inp = torch.cat((image, superpixel), dim=1)
-
-                    raise IOError("test shapes:" + str(image.shape) + str(superpixel.shape))
 
                 else:
                     raise NotImplementedError("Given input channel number is not implemented yet!")
