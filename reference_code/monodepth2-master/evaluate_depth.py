@@ -121,7 +121,7 @@ def evaluate(opt):
 
                 if opt.dataset == "kitti_superpixel":
                     if opt.input_channels is 3:
-                        input_color = data[("super_img", 0, 0)].cuda()
+                        input_color = data[("color", 0, 0)].cuda()
 
                     elif opt.input_channels is 4:
                         color = data[("color", 0, 0)].cuda()
