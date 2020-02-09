@@ -127,12 +127,12 @@ def evaluate(opt):
                     elif opt.input_channels is 4:
                         color = data[("color", 0, 0)].cuda()
                         superpixel = data[("super_label", 0, 0)].cuda()
-                        input_color = torch.cat((color, superpixel), dim=0)
+                        input_color = torch.cat((color, superpixel), dim=1)
 
                     elif opt.input_channels is 6:
                         color = data[("color", 0, 0)].cuda()
                         superpixel = data[("super_img", 0, 0)].cuda()
-                        input_color = torch.cat((color, superpixel), dim=0)
+                        input_color = torch.cat((color, superpixel), dim=1)
                     else:
                         raise NotImplementedError("given input channel size is not implemented.")
                 else:
