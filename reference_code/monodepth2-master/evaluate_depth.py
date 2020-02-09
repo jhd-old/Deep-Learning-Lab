@@ -85,7 +85,7 @@ def evaluate(opt):
 
             dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
                                                  encoder_dict['height'], encoder_dict['width'],
-                                                 [0], 4, opt, is_train=False, use_superpixel=True)
+                                                 [0], 4, opt, is_train=False)
         else:
             dataset = datasets.KITTIRAWDataset(opt.data_path, filenames,
                                                encoder_dict['height'], encoder_dict['width'],
