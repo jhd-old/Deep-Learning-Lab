@@ -319,6 +319,8 @@ class Trainer:
                     superpixel = inputs["super_img_aug", 0, 0]
                     inp = torch.cat((image, superpixel), dim=1)
 
+                    raise IOError("test shapes:" + str(image.shape) + str(superpixel.shape))
+
                 else:
                     raise NotImplementedError("Given input channel number is not implemented yet!")
 
