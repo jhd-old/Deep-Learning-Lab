@@ -80,7 +80,8 @@ def evaluate(opt):
 
         encoder_dict = torch.load(encoder_path)
 
-        if opt.dataset == "kitti_superpixel":
+        if opt.dataset == "kitti_superpixel" or opt.superpixel_mask_loss_binary or opt.normal_loss or \
+                opt.superpixel_mask_loss_continuous:
 
             dataset = datasets.SuperpixelDataset(opt.data_path, filenames,
                                                  encoder_dict['height'], encoder_dict['width'],
