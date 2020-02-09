@@ -244,9 +244,6 @@ class Trainer:
         print("Training")
         self.set_train()
 
-        if self.opt.input_channels is 6:
-            raise IOError("Test")
-
         for batch_idx, inputs in enumerate(self.train_loader):
 
             before_op_time = time.time()
