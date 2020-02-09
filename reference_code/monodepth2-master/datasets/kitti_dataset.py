@@ -163,6 +163,7 @@ class SuperpixelDataset(KITTIDataset):
             super_img = transforms.ToPILImage()(super_img)
 
         else:
+            raise IOError("Should be 6 channel" + str(channel))
             super_img = None
 
         if do_flip:
