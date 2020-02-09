@@ -50,6 +50,7 @@ class Trainer:
         if self.opt.use_stereo:
             self.opt.frame_ids.append("s")
 
+        print("Initilize resnet encoder")
         if self.opt.dataset == "kitti_superpixel":
             # use a modified channel resnet encoder
             self.models["encoder"] = networks.ResnetEncoder(
@@ -74,6 +75,7 @@ class Trainer:
 
         if self.use_pose_net:
             if self.opt.pose_model_type == "separate_resnet":
+                print("Initilize pose resnet encoder")
                 self.models["pose_encoder"] = networks.ResnetEncoder(
                     self.opt.num_layers,
                     self.opt.weights_init == "pretrained",
