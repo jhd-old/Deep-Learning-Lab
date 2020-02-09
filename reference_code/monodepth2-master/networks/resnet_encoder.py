@@ -56,6 +56,7 @@ def resnet_multiimage_input(num_layers, pretrained=False, num_input_images=1, nu
     # modify the first convolution of the resnet to fit the number of input channels
     model.conv1 = nn.Conv2d(num_input_images * num_input_channels, 64, kernel_size=7, stride=2, padding=3, bias=False)
 
+    print("Initialized {] channel resnet encoder.".format(num_input_channels))
     if pretrained:
         loaded = model_zoo.load_url(models.resnet.model_urls['resnet{}'.format(num_layers)])
         loaded['conv1.weight'] = torch.cat(

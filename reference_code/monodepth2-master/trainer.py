@@ -51,9 +51,9 @@ class Trainer:
             self.opt.frame_ids.append("s")
 
         if self.opt.dataset == "kitti_superpixel":
-            # use a four channel resnet encoder
+            # use a modified channel resnet encoder
             self.models["encoder"] = networks.ResnetEncoder(
-                self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_channels=4)
+                self.opt.num_layers, self.opt.weights_init == "pretrained", num_input_channels=self.opt.input_channels)
         else:
             self.models["encoder"] = networks.ResnetEncoder(
                 self.opt.num_layers, self.opt.weights_init == "pretrained")
@@ -146,7 +146,7 @@ class Trainer:
 
             # get number of channels to use for superpixel
             # 4 channel will use numpy array with superpixel indices
-            # 3 channel will use only image averaged over superpixel area
+            # 3 channel will use rgb and put superpixel in dictionary. Can be used eg. in loss
             # 6 channel will use normal image + image averaged over superpixel area
 
             num_sup_channels = self.opt.input_channels
