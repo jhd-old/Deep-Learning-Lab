@@ -183,7 +183,7 @@ def load_superpixel(image_path, superpixel_method, superpixel_arguments, img_ext
     """
 
     superpixel_ident = str(superpixel_method)
-   
+
     for a in superpixel_arguments:
         # replace . with _
         a = str(a).replace(".", "_")
