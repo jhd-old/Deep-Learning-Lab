@@ -891,7 +891,7 @@ class Trainer:
 
                 superpixel = inputs[("super_label", 0, scale)]
                 normals = outputs[("normal_vec", 0)]
-                loss += self.opt.normals_smoothness * self.compute_normals_loss(superpixel, normals) / (
+                loss += self.opt.normals_smoothness * self.compute_normals_loss_np(superpixel, normals) / (
                                 2 ** scale)
 
             total_loss += loss
