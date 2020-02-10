@@ -497,6 +497,32 @@ class Trainer:
         # added return
         return outputs
 
+
+    def avg_normals_on_sp(self, superpixel, normals):
+
+        """
+        Averages the normals over each Superpixel and sets the normals on each Superpixel to its average.
+
+        :param superpixel: superpixel labels shape (1,H,W)
+        :param normals: normals vectors(batch_size,channel,H,W)
+        :return normals: normal vectors
+        """
+        sp_indices = torch.unique(superpixel)
+        zeros = torch.zeros_like(normals)
+
+        for i in sp_indices:
+            sp = torch.where(superpixel == i, normals, torch.tensor([np.nan]))
+
+            # todo: mean only for valid indices
+            # try: x[~torch.isnan(x)].mean()
+            normals = torch.where(superpixel == i,  sp[~ torch.isnan(sp)].mean(), normals)
+
+        return normals
+
+
+
+
+
     def compute_normals_loss(self, superpixel, normals):
 
         """
