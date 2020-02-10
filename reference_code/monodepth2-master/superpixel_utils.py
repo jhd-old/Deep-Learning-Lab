@@ -3,7 +3,7 @@ from __future__ import absolute_import, division, print_function
 import multiprocessing as mp
 import os
 from enum import IntEnum
-from pathlib import PurePath, Path
+from pathlib import PurePath
 
 import numpy as np
 from PIL import Image
@@ -13,6 +13,45 @@ from skimage.segmentation import felzenszwalb, slic
 from datasets.mono_dataset import pil_loader
 
 from options import MonodepthOptions
+
+
+def load_superpixel_data(path, method, arguments, img_ext):
+
+    # check if file exists
+    # it really should, but just to be safe
+    try:
+        # saved superpixel for key "x"
+        if os.path.isfile(path):
+            super_file = np.load(path)
+        else:
+            raise IOError("No file at given path: " + (str(path)))
+    except:
+
+        try:
+            # try to use posix
+            # pure path will use unix or windows correct path depending on detected system
+            pos_path = PurePath(path.replace("/", "\\"))
+
+            pos_path = pos_path.as_posix()
+
+            super_file = np.load(pos_path)
+        except:
+            # do the necessary thing: create superpixel information
+            try:
+                print("Error while loading superpixel. Take fallback and calculate online!")
+                superpixel_label = convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
+                superpixel_label = superpixel_label.astype(np.int32)
+                super_file = None
+            except:
+                raise IOError("Error while loading superpixel path at " + str(path) +
+                              ". Tried to calculate online, but failed for image:" + str(path))
+    try:
+        if super_file is not None:
+            superpixel_label = super_file["x"].astype(np.int32)
+    except:
+        raise IOError("Error while reading data of superpixel!")
+
+    return superpixel_label
 
 
 def save_superpixel_in_archive(file_path, data, compressed=True):

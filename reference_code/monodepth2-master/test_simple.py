@@ -21,6 +21,8 @@ import networks
 from layers import disp_to_depth
 from utils import download_model_if_doesnt_exist
 
+from superpixel_utils import load_superpixel_data, avg_image
+
 
 def parse_args():
     parser = argparse.ArgumentParser(
@@ -79,6 +81,11 @@ def test_simple(args):
     encoder.to(device)
     encoder.eval()
 
+    # load more information
+    input_channels = loaded_dict_enc['input_channels']
+    sup_method = loaded_dict_enc['superpixel_method']
+    sup_args = loaded_dict_enc['superpixel_arguments']
+
     print("   Loading pretrained decoder")
     depth_decoder = networks.DepthDecoder(
         num_ch_enc=encoder.num_ch_enc, scales=range(4))
@@ -114,12 +121,27 @@ def test_simple(args):
             # Load image and preprocess
             input_image = pil.open(image_path).convert('RGB')
             original_width, original_height = input_image.size
-            input_image = input_image.resize((feed_width, feed_height), pil.LANCZOS)
-            input_image = transforms.ToTensor()(input_image).unsqueeze(0)
+            input_image_pil = input_image.resize((feed_width, feed_height), pil.LANCZOS)
+            input_image = transforms.ToTensor()(input_image_pil).unsqueeze(0)
+
+            input_image = input_image.to(device)
+
+            if input_channels is 3:
+                inp = input_image
+
+            elif input_channels is 4:
+                sup = load_superpixel(image_path, sup_method, sup_args, args.ext)
+                inp = torch.cat((input_image, sup), dim=1)
+
+            elif input_channels is 6:
+                sup = load_superpixel(image_path, sup_method, sup_args, args.ext, img=input_image_pil)
+                inp = torch.cat((input_image, sup), dim=1)
+
+            else:
+                raise NotImplementedError("Given channel size is not implemented!")
 
             # PREDICTION
-            input_image = input_image.to(device)
-            features = encoder(input_image)
+            features = encoder(inp)
             outputs = depth_decoder(features)
 
             disp = outputs[("disp", 0)]
@@ -147,6 +169,58 @@ def test_simple(args):
                 idx + 1, len(paths), name_dest_im))
 
     print('-> Done!')
+
+
+def load_superpixel(image_path, superpixel_method, superpixel_arguments, img_ext, img=None):
+    """
+
+    :param image_path:
+    :param superpixel_method:
+    :param superpixel_arguments:
+    :param img_ext:
+    :param img:
+    :return:
+    """
+
+    superpixel_ident = str(superpixel_method)
+   
+    for a in superpixel_arguments:
+        # replace . with _
+        a = str(a).replace(".", "_")
+
+        superpixel_ident += a
+
+    path = image_path.replace(img_ext, superpixel_ident + ".npz")
+
+    super_label = load_superpixel_data(path, superpixel_method, superpixel_arguments, img_ext)
+
+    # channel is 3
+    if img is not None:
+        # need to convert image from pil to numpy first
+        img_np = np.array(img)
+
+        super_img = avg_image(img_np, super_label)
+
+        # convert label to pillow image
+        super_img = transforms.ToPILImage()(super_img)
+
+        # be sure to delete img_np
+        del img_np
+
+        sup = super_img
+    else:
+
+        # add an empty dimension for channel
+        super_label = np.expand_dims(super_label, axis=2)
+
+        # convert label to pillow image
+        # since there is no 16bit support, we need to use 32bit:
+        # mode I: (32-bit signed integer pixels)
+        super_label = transforms.ToPILImage(mode='I')(super_label)
+
+        sup = super_label
+
+    return sup
 
 
 if __name__ == '__main__':
