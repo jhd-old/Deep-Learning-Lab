@@ -36,7 +36,7 @@ class MonodepthOptions:
                                 "mono_1024x320",
                                 "stereo_1024x320",
                                 "mono+stereo_1024x320"])
-        self.parser.add_argument('model_path', type=str, help='path to custom model')
+        self.parser.add_argument('--model_path', type=str, help='path to custom model')
 
         ##############################################
         # NEW ADDED ARGUMENTS
