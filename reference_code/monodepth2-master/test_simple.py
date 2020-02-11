@@ -4,7 +4,7 @@
 # which allows for non-commercial use only, the full terms of which are made
 # available in the LICENSE file.
 
-from __future__ import absolute_import, division, print_function
+# from __future__ import absolute_import, division, print_function
 
 import argparse
 import glob
@@ -21,16 +21,20 @@ import networks
 from layers import disp_to_depth
 from utils import download_model_if_doesnt_exist
 
+from superpixel_utils import load_superpixel_data, avg_image
 
-def parse_args():
+
+def parse_args_custom():
     parser = argparse.ArgumentParser(
         description='Simple testing funtion for Monodepthv2 models.')
 
     parser.add_argument('--image_path', type=str,
                         help='path to a test image or folder of images', required=True)
-    parser.add_argument('--model_name', type=str,
+    parser.add_argument('--model_name_t', type=str,
                         help='name of a pretrained model to use',
                         choices=[
+                            "custom",
+                            "direct",
                             "mono_640x192",
                             "stereo_640x192",
                             "mono+stereo_640x192",
@@ -40,6 +44,7 @@ def parse_args():
                             "mono_1024x320",
                             "stereo_1024x320",
                             "mono+stereo_1024x320"])
+    parser.add_argument('--model_path', type=str, help='path to custom model')
     parser.add_argument('--ext', type=str,
                         help='image extension to search for in folder', default="jpg")
     parser.add_argument("--no_cuda",
@@ -52,16 +57,25 @@ def parse_args():
 def test_simple(args):
     """Function to predict for a single image or folder of images
     """
-    assert args.model_name is not None, \
-        "You must specify the --model_name parameter; see README.md for an example"
+    assert args.model_name_t is not None, \
+        "You must specify the --model_name_t parameter; see README.md for an example"
 
     if torch.cuda.is_available() and not args.no_cuda:
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
 
-    download_model_if_doesnt_exist(args.model_name)
-    model_path = os.path.join("models", args.model_name)
+    if args.model_name_t == "custom":
+        # use OURS
+        model_path = os.path.join("log", args.model_path)
+
+    elif args.model_name_t == "direct":
+        model_path = ""
+
+    else:
+        # use mododepth pretrained ones
+        download_model_if_doesnt_exist(args.model_name_t)
+        model_path = os.path.join("models", args.model_name_t)
     print("-> Loading model from ", model_path)
     encoder_path = os.path.join(model_path, "encoder.pth")
     depth_decoder_path = os.path.join(model_path, "depth.pth")
@@ -78,6 +92,11 @@ def test_simple(args):
     encoder.load_state_dict(filtered_dict_enc)
     encoder.to(device)
     encoder.eval()
+
+    # load more information
+    input_channels = loaded_dict_enc['input_channels']
+    sup_method = loaded_dict_enc['superpixel_method']
+    sup_args = loaded_dict_enc['superpixel_arguments']
 
     print("   Loading pretrained decoder")
     depth_decoder = networks.DepthDecoder(
@@ -114,12 +133,27 @@ def test_simple(args):
             # Load image and preprocess
             input_image = pil.open(image_path).convert('RGB')
             original_width, original_height = input_image.size
-            input_image = input_image.resize((feed_width, feed_height), pil.LANCZOS)
-            input_image = transforms.ToTensor()(input_image).unsqueeze(0)
+            input_image_pil = input_image.resize((feed_width, feed_height), pil.LANCZOS)
+            input_image = transforms.ToTensor()(input_image_pil).unsqueeze(0)
+
+            input_image = input_image.to(device)
+
+            if input_channels is 3:
+                inp = input_image
+
+            elif input_channels is 4:
+                sup = load_superpixel(image_path, sup_method, sup_args, args.ext)
+                inp = torch.cat((input_image, sup), dim=1)
+
+            elif input_channels is 6:
+                sup = load_superpixel(image_path, sup_method, sup_args, args.ext, img=input_image_pil)
+                inp = torch.cat((input_image, sup), dim=1)
+
+            else:
+                raise NotImplementedError("Given channel size is not implemented!")
 
             # PREDICTION
-            input_image = input_image.to(device)
-            features = encoder(input_image)
+            features = encoder(inp)
             outputs = depth_decoder(features)
 
             disp = outputs[("disp", 0)]
@@ -149,6 +183,59 @@ def test_simple(args):
     print('-> Done!')
 
 
+def load_superpixel(image_path, superpixel_method, superpixel_arguments, img_ext, img=None):
+    """
+
+    :param image_path:
+    :param superpixel_method:
+    :param superpixel_arguments:
+    :param img_ext:
+    :param img:
+    :return:
+    """
+
+    superpixel_ident = str(superpixel_method)
+
+    for a in superpixel_arguments:
+        # replace . with _
+        a = str(a).replace(".", "_")
+
+        superpixel_ident += a
+
+    path = image_path.replace(img_ext, superpixel_ident + ".npz")
+
+    super_label = load_superpixel_data(path, superpixel_method, superpixel_arguments, img_ext)
+
+    # channel is 3
+    if img is not None:
+        # need to convert image from pil to numpy first
+        img_np = np.array(img)
+
+        super_img = avg_image(img_np, super_label)
+
+        # convert label to pillow image
+        super_img = transforms.ToPILImage()(super_img)
+
+        # be sure to delete img_np
+        del img_np
+
+        sup = super_img
+    else:
+
+        # add an empty dimension for channel
+        super_label = np.expand_dims(super_label, axis=2)
+
+        # convert label to pillow image
+        # since there is no 16bit support, we need to use 32bit:
+        # mode I: (32-bit signed integer pixels)
+        super_label = transforms.ToPILImage(mode='I')(super_label)
+
+        sup = super_label
+
+    return sup
+
+
 if __name__ == '__main__':
-    args = parse_args()
+    print("Starting test simple...")
+    args = parse_args_custom()
     test_simple(args)

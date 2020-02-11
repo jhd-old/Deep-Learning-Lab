@@ -11,12 +11,11 @@ import os
 import PIL.Image as pil
 import numpy as np
 import skimage.transform
-from pathlib import PurePath, Path
-from kitti_utils import generate_depth_map
-from superpixel_utils import avg_image
-from .mono_dataset import MonoDataset
 from torchvision import transforms
-from superpixel_utils import convert_single_rgb_to_superpixel
+
+from kitti_utils import generate_depth_map
+from superpixel_utils import load_superpixel_data, avg_image
+from .mono_dataset import MonoDataset
 
 
 class KITTIDataset(MonoDataset):
@@ -121,40 +120,7 @@ class SuperpixelDataset(KITTIDataset):
 
         path = path.replace(img_ext, superpixel_ident + ".npz")
 
-        # check if file exists
-        # it really should, but just to be safe
-        try:
-            # saved superpixel for key "x"
-            if os.path.isfile(path):
-                super_file = np.load(path)
-            else:
-                raise IOError("No file at given path: " + (str(path)))
-        except:
-
-            try:
-                # try to use posix
-                # pure path will use unix or windows correct path depending on detected system
-                pos_path = PurePath(path.replace("/", "\\"))
-
-                pos_path = pos_path.as_posix()
-
-                super_file = np.load(pos_path)
-            except:
-                # do the necessary thing: create superpixel information
-                try:
-                    print("Error while loading superpixel. Take fallback and calculate online!")
-                    super_label = convert_single_rgb_to_superpixel(path, img_ext, method, arguments)
-                    super_label = super_label.astype(np.int32)
-                    super_file = None
-                except:
-                    raise IOError("Error while loading superpixel path at " + str(path) +
-                                  ". Tried to calculate online, but failed for image:" + str(path))
-
-        try:
-            if super_file is not None:
-                super_label = super_file["x"].astype(np.int32)
-        except:
-            raise IOError("Error while reading data of superpixel!")
+        super_label = load_superpixel_data(path, method, arguments, img_ext)
 
         if channel is 3:
             # need to convert image from pil to numpy first

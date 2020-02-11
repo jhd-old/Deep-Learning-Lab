@@ -16,6 +16,29 @@ class MonodepthOptions:
     def __init__(self):
         self.parser = argparse.ArgumentParser(description="Monodepthv2 options")
 
+
+        ##############################################
+        # TEMPORARLY
+        ##############################################
+
+        self.parser.add_argument('--image_path', type=str,
+                            help='path to a test image or folder of images', required=True)
+        self.parser.add_argument('--model_name_t', type=str,
+                            help='name of a pretrained model to use',
+                            choices=[
+                                "custom",
+                                "direct",
+                                "mono_640x192",
+                                "stereo_640x192",
+                                "mono+stereo_640x192",
+                                "mono_no_pt_640x192",
+                                "stereo_no_pt_640x192",
+                                "mono+stereo_no_pt_640x192",
+                                "mono_1024x320",
+                                "stereo_1024x320",
+                                "mono+stereo_1024x320"])
+        self.parser.add_argument('--model_path', type=str, help='path to custom model')
+
         ##############################################
         # NEW ADDED ARGUMENTS
         ##############################################
