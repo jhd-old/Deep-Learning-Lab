@@ -24,7 +24,7 @@ from utils import download_model_if_doesnt_exist
 from superpixel_utils import load_superpixel_data, avg_image
 
 
-def parse_args():
+def parse_args_custom():
     parser = argparse.ArgumentParser(
         description='Simple testing funtion for Monodepthv2 models.')
 
@@ -232,5 +232,6 @@ def load_superpixel(image_path, superpixel_method, superpixel_arguments, img_ext
 
 
 if __name__ == '__main__':
-    args = parse_args()
+    print("Starting test simple...")
+    args = parse_args_custom()
     test_simple(args)
