@@ -66,7 +66,7 @@ def test_simple(args):
 
     if args.model_name_t == "custom":
         # use OURS
-        model_path = os.path.join("log", args.model_path)
+        model_path = os.path.join("../log", args.model_path)
 
     else:
         # use mododepth pretrained ones
