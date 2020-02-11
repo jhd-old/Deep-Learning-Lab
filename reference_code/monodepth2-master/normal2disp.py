@@ -16,11 +16,11 @@ def normals_to_disp3(inv_K, normal):
 
     ## get size of tensor
     batch_size, _, h, w = normal.size()
-    inv_K = inv_K[0, 0:3, 0:3].cuda()
+    inv_K = inv_K[0, 0:3, 0:3].cpu()
 
     # get 3D homogenous pixel coordinate
     pixelgrid = get_pixelgrid(batch_size, h, w)
-    pix_coords = pixelgrid.view(batch_size, 3, -1)
+    pix_coords = pixelgrid.view(batch_size, 3, -1).cpu()
 
     # matrix multiplication with 3x3 (k_inv)
     cam_points = torch.matmul(inv_K, pix_coords).view(batch_size, -1, h, w)
