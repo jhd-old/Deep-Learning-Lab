@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function
 import argparse
 import glob
 import os
-import datasets
+
 import PIL.Image as pil
 import matplotlib as mpl
 import matplotlib.cm as cm
