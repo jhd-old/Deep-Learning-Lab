@@ -43,7 +43,7 @@ def parse_args_custom():
                             "mono_1024x320",
                             "stereo_1024x320",
                             "mono+stereo_1024x320"])
-    parser.add_argument('model_path', type=str, help='path to custom model')
+    parser.add_argument('--model_path', type=str, help='path to custom model')
     parser.add_argument('--ext', type=str,
                         help='image extension to search for in folder', default="jpg")
     parser.add_argument("--no_cuda",
