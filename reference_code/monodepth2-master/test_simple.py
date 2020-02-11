@@ -34,6 +34,7 @@ def parse_args_custom():
                         help='name of a pretrained model to use',
                         choices=[
                             "custom",
+                            "direct",
                             "mono_640x192",
                             "stereo_640x192",
                             "mono+stereo_640x192",
@@ -66,9 +67,10 @@ def test_simple(args):
 
     if args.model_name_t == "custom":
         # use OURS
-
-        print(os.getcwd())
         model_path = os.path.join("log", args.model_path)
+
+    elif args.model_name_t == "direct":
+        model_path = ""
 
     else:
         # use mododepth pretrained ones

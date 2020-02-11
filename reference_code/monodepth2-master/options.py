@@ -27,6 +27,7 @@ class MonodepthOptions:
                             help='name of a pretrained model to use',
                             choices=[
                                 "custom",
+                                "direct",
                                 "mono_640x192",
                                 "stereo_640x192",
                                 "mono+stereo_640x192",
