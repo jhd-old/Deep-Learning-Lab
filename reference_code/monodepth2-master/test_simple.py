@@ -33,6 +33,7 @@ def parse_args():
     parser.add_argument('--model_name', type=str,
                         help='name of a pretrained model to use',
                         choices=[
+                            "custom",
                             "mono_640x192",
                             "stereo_640x192",
                             "mono+stereo_640x192",
@@ -42,6 +43,7 @@ def parse_args():
                             "mono_1024x320",
                             "stereo_1024x320",
                             "mono+stereo_1024x320"])
+    parser.add_argument('model_path', type=str, help='path to custom model')
     parser.add_argument('--ext', type=str,
                         help='image extension to search for in folder', default="jpg")
     parser.add_argument("--no_cuda",
@@ -62,8 +64,14 @@ def test_simple(args):
     else:
         device = torch.device("cpu")
 
-    download_model_if_doesnt_exist(args.model_name)
-    model_path = os.path.join("models", args.model_name)
+    if args.model_name == "custom":
+        # use OURS
+        model_path = os.path.join("log", args.model_path)
+
+    else:
+        # use mododepth pretrained ones
+        download_model_if_doesnt_exist(args.model_name)
+        model_path = os.path.join("models", args.model_name)
     print("-> Loading model from ", model_path)
     encoder_path = os.path.join(model_path, "encoder.pth")
     depth_decoder_path = os.path.join(model_path, "depth.pth")
