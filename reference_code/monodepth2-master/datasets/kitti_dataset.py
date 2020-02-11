@@ -11,11 +11,12 @@ import os
 import PIL.Image as pil
 import numpy as np
 import skimage.transform
+from torchvision import transforms
+
 from kitti_utils import generate_depth_map
 from superpixel_utils import avg_image
-from .mono_dataset import MonoDataset
-from torchvision import transforms
 from superpixel_utils import load_superpixel_data
+from .mono_dataset import MonoDataset
 
 
 class KITTIDataset(MonoDataset):
