@@ -30,7 +30,7 @@ def parse_args_custom():
 
     parser.add_argument('--image_path', type=str,
                         help='path to a test image or folder of images', required=True)
-    parser.add_argument('--model_name', type=str,
+    parser.add_argument('--model_name_t', type=str,
                         help='name of a pretrained model to use',
                         choices=[
                             "custom",
@@ -56,22 +56,22 @@ def parse_args_custom():
 def test_simple(args):
     """Function to predict for a single image or folder of images
     """
-    assert args.model_name is not None, \
-        "You must specify the --model_name parameter; see README.md for an example"
+    assert args.model_name_t is not None, \
+        "You must specify the --model_name_t parameter; see README.md for an example"
 
     if torch.cuda.is_available() and not args.no_cuda:
         device = torch.device("cuda")
     else:
         device = torch.device("cpu")
 
-    if args.model_name == "custom":
+    if args.model_name_t == "custom":
         # use OURS
         model_path = os.path.join("log", args.model_path)
 
     else:
         # use mododepth pretrained ones
-        download_model_if_doesnt_exist(args.model_name)
-        model_path = os.path.join("models", args.model_name)
+        download_model_if_doesnt_exist(args.model_name_t)
+        model_path = os.path.join("models", args.model_name_t)
     print("-> Loading model from ", model_path)
     encoder_path = os.path.join(model_path, "encoder.pth")
     depth_decoder_path = os.path.join(model_path, "depth.pth")
