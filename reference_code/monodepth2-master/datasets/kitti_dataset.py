@@ -14,8 +14,7 @@ import skimage.transform
 from torchvision import transforms
 
 from kitti_utils import generate_depth_map
-from superpixel_utils import avg_image
-from superpixel_utils import load_superpixel_data
+from superpixel_utils import load_superpixel_data, avg_image
 from .mono_dataset import MonoDataset
 
 
