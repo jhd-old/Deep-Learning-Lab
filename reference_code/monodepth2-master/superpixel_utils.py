@@ -9,10 +9,15 @@ import numpy as np
 from PIL import Image
 from skimage.color import label2rgb
 from skimage.segmentation import felzenszwalb, slic
-
-from datasets.mono_dataset import pil_loader
-
 from options import MonodepthOptions
+
+
+def pil_loader(path):
+    # open path as file to avoid ResourceWarning
+    # (https://github.com/python-pillow/Pillow/issues/835)
+    with open(path, 'rb') as f:
+        with Image.open(f) as img:
+            return img.convert('RGB')
 
 
 def load_superpixel_data(path, method, arguments, img_ext):
