@@ -209,7 +209,7 @@ def test_simple(args):
                 inv_K = np.expand_dims(inv_K, axis=0)
                 inv_K = torch.from_numpy(inv_K)
 
-                disp = nd.normals_to_disp3(inv_K, normal_vec)
+                disp = nd.normals_to_disp3(inv_K, normal_vec, cuda=False)
                 # print("new depth tensor shape", depth.shape)
 
                 outputs[("disp", 0)] = disp

@@ -12,15 +12,19 @@ def get_pixelgrid(b, h, w):
     return pixelgrid
 
 
-def normals_to_disp3(inv_K, normal):
+def normals_to_disp3(inv_K, normal, cuda=True):
 
     ## get size of tensor
     batch_size, _, h, w = normal.size()
-    inv_K = inv_K[0, 0:3, 0:3].cpu()
+    inv_K = inv_K[0, 0:3, 0:3]
 
     # get 3D homogenous pixel coordinate
     pixelgrid = get_pixelgrid(batch_size, h, w)
-    pix_coords = pixelgrid.view(batch_size, 3, -1).cpu()
+    pix_coords = pixelgrid.view(batch_size, 3, -1)
+
+    if not cuda:
+        inv_K = inv_K.cpu()
+        pix_coords = pix_coords.cpu()
 
     # matrix multiplication with 3x3 (k_inv)
     cam_points = torch.matmul(inv_K, pix_coords).view(batch_size, -1, h, w)
