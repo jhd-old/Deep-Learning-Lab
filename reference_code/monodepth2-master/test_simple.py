@@ -209,8 +209,13 @@ def test_simple(args):
                 inv_K = np.expand_dims(inv_K, axis=0)
                 inv_K = torch.from_numpy(inv_K)
 
-                disp = nd.normals_to_disp3(inv_K, normal_vec)
+                disp = nd.normals_to_disp3(inv_K, normal_vec, cuda=False)
                 # print("new depth tensor shape", depth.shape)
+
+                # Save normal_vector as numpy
+                output_name = os.path.splitext(os.path.basename(image_path))[0]
+                name_vector_map_npy = os.path.join(output_directory, "{}_vector_map.npy".format(output_name))
+                np.save(name_vector_map_npy, normal_vec.cpu().numpy())
 
                 outputs[("disp", 0)] = disp
             else:

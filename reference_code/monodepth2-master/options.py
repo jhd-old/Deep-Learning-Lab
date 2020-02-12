@@ -22,7 +22,7 @@ class MonodepthOptions:
         ##############################################
 
         self.parser.add_argument('--image_path', type=str,
-                            help='path to a test image or folder of images', required=True)
+                            help='path to a test image or folder of images')
         self.parser.add_argument('--model_name_t', type=str,
                             help='name of a pretrained model to use',
                             choices=[
