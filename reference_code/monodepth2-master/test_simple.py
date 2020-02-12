@@ -22,6 +22,7 @@ from layers import disp_to_depth
 from utils import download_model_if_doesnt_exist
 import normal2disp as nd
 from superpixel_utils import load_superpixel_data, avg_image
+import cv2
 
 
 def parse_args_custom():
@@ -216,6 +217,28 @@ def test_simple(args):
                 output_name = os.path.splitext(os.path.basename(image_path))[0]
                 name_vector_map_npy = os.path.join(output_directory, "{}_vector_map.npy".format(output_name))
                 np.save(name_vector_map_npy, normal_vec.cpu().numpy())
+
+                # generate the normal_vec image
+                name_vector_map_img = os.path.join(output_directory, "{}_vector_map.png".format(output_name))
+
+                # unpack the vectors into x and y coordina..
+                zx = normal_vec[0, :, :, 0]
+                zy = normal_vec[0, :, :, 1]
+
+                # stack them, norm them
+                normal = np.dstack((-zx, -zy, np.ones_like(normal_vec[0, :, :, 3])))
+                n = np.linalg.norm(normal, axis=2)
+                normal[:, :, 0] /= n
+                normal[:, :, 1] /= n
+                normal[:, :, 2] /= n
+
+                # offset and rescale values to be in 0-255
+                normal += 1
+                normal /= 2
+                normal *= 255
+
+                # save the image into the same folder
+                cv2.imwrite(name_vector_map_img, normal[:, :, ::-1])
 
                 outputs[("disp", 0)] = disp
             else:
