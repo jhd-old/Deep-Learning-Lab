@@ -2,12 +2,15 @@ import numpy as np
 import torch
 
 
-def get_pixelgrid(b, h, w):
+def get_pixelgrid(b, h, w, cuda=True):
     grid_h = torch.linspace(0.0, w - 1, w).view(1, 1, 1, w).expand(b, 1, h, w)
     grid_v = torch.linspace(0.0, h - 1, h).view(1, 1, h, 1).expand(b, 1, h, w)
 
     ones = torch.ones_like(grid_h)
-    pixelgrid = torch.cat((grid_h, grid_v, ones), dim=1).float().requires_grad_(False).cuda()
+    pixelgrid = torch.cat((grid_h, grid_v, ones), dim=1).float().requires_grad_(False)
+
+    if cuda:
+        pixelgrid = pixelgrid.cuda()
 
     return pixelgrid
 
@@ -19,7 +22,7 @@ def normals_to_disp3(inv_K, normal, cuda=True):
     inv_K = inv_K[0, 0:3, 0:3]
 
     # get 3D homogenous pixel coordinate
-    pixelgrid = get_pixelgrid(batch_size, h, w)
+    pixelgrid = get_pixelgrid(batch_size, h, w, cuda)
     pix_coords = pixelgrid.view(batch_size, 3, -1)
 
     if not cuda:
