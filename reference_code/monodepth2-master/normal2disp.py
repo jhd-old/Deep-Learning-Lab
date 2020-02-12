@@ -26,6 +26,10 @@ def normals_to_disp3(inv_K, normal, cuda=True):
         inv_K = inv_K.cpu()
         pix_coords = pix_coords.cpu()
 
+    else:
+        inv_K = inv_K.cuda()
+        pix_coords = pix_coords.cuda()
+
     # matrix multiplication with 3x3 (k_inv)
     cam_points = torch.matmul(inv_K, pix_coords).view(batch_size, -1, h, w)
 
