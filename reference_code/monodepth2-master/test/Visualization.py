@@ -49,6 +49,11 @@ vec_x = np.zeros_like(xdata)
 vec_y = np.zeros_like(ydata)
 vec_z = np.zeros_like(zdata)
 
+std_in_sp = np.empty((3,len(np.unique(segments_img))))
+mean_in_sp = np.empty((3,len(np.unique(segments_img))))
+azi_in_sp = []
+elv_in_sp = []
+
 for i in np.unique(segments_img):
     temp_arr = np.where(segments_img == i , mag , 0)
     indices = center_of_mass(temp_arr)
@@ -59,14 +64,37 @@ for i in np.unique(segments_img):
     temp_xdata = np.where(segments_img == i , xdata , float('nan'))
     temp_ydata = np.where(segments_img == i , ydata , float('nan'))
     temp_zdata = np.where(segments_img == i , zdata , float('nan'))
+
+    mean_in_sp[:,i] = [np.nanmean(temp_xdata),np.nanmean(temp_ydata),np.nanmean(temp_zdata)]
+    std_in_sp[:,i] = [np.nanstd(temp_xdata),np.nanstd(temp_ydata),np.nanstd(temp_zdata)]
+
     vec_x[ix,iy] = np.nanmean(temp_xdata)
     vec_y[ix,iy] = np.nanmean(temp_ydata)
     vec_z[ix,iy] = np.nanmean(temp_zdata)
-    #r = vec_y[ix,iy]**2 + vec_y[ix,iy]**2 + vec_z[ix,iy]**2
-    #elv = np.arccos(vec_z[ix,iy]/r)
-    #print(np.degrees(elv))
-    
+    r = vec_x[ix,iy]**2 + vec_y[ix,iy]**2 + vec_z[ix,iy]**2
+    elv = np.degrees(np.arccos(vec_z[ix,iy]/r))
+    print('elviation %s' % elv)
+    if vec_y[ix,iy] < 0:
+        azi = 180 - np.degrees(np.arctan(vec_y[ix,iy]/vec_x[ix,iy])) 
+    #elif vec_x[ix,iy] < 0 and vec_y[ix,iy] < 0:
+    #    azi = np.degrees(np.arctan(vec_y[ix,iy]/vec_x[ix,iy])) - 180
+    else:
+        azi = np.degrees(np.arctan(vec_x[ix,iy]/vec_y[ix,iy]))
+    print('azimuth %s' % azi)
+    azi_in_sp.append(azi)
+    elv_in_sp.append(elv)
 #plt.imshow(zdata, cmap='viridis')
+
+# temp_xdata = np.where(segments_img == 0 , xdata , float('nan'))
+# temp_ydata = np.where(segments_img == 0 , ydata , float('nan'))
+# temp_zdata = np.where(segments_img == 0 , zdata , float('nan'))
+# x = np.nanmean(temp_xdata)
+# y = np.nanmean(temp_ydata)
+# z = np.nanmean(temp_zdata)
+# r = x**2 + y**2 + z**2
+# elv = np.degrees(np.arccos(z/r))
+# azi = np.degrees(np.arctan(x/y))
+# print('azi = %s, elv =  %s, r = %s, meanx = %s, meany = %s , meanz = %s' %(azi, elv, r, x,y,z))
 
 x = np.arange(640)
 y = np.arange(192)
@@ -81,12 +109,12 @@ zeros = np.zeros_like(zdata)
 surf = ax.plot_surface(X , Y, zeros , facecolors = rgba_norm , rstride=2, cstride=2, shade=False)
 #surf = ax.plot_surface(X , Y, zeros , facecolors=plt.cm.viridis(mag), rstride=5, cstride=5, shade=False)
 #quiv = ax.quiver(xdata.flatten(),ydata.flatten(),0,xdata.flatten(),ydata.flatten(),zdata.flatten())
-quiv = ax.quiver(X,Y,zeros, vec_x , vec_y , vec_z, arrow_length_ratio = 0.3, lw =1, color = 'r')
+quiv = ax.quiver(X,Y,zeros, 100*vec_x , 100*vec_y , 100*vec_z, length = 0.3, arrow_length_ratio = 0.3, lw =1, color = 'r')
 
 ax.set_xlabel('x')
 ax.set_ylabel('y')
 ax.set_zlabel('z')
-ax.set_zlim(0,10)
+ax.set_zlim(0,100)
 ax.set_ylim(191,0)
 ax.set_xlim(0,640)
 
