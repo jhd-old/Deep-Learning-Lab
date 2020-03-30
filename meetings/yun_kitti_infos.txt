@@ -11,7 +11,7 @@ do matrix calculations with np.dot()
 
 depth
 disparity
-    d=bf/d
+    d=bf/d  
 
 enter function inside
 trainer.py
