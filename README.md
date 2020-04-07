@@ -14,49 +14,23 @@ This paper proposes a modified approach for estimation dense depth estimation fr
 
 ## Abligation Studay & Comparison with other Networks
 
-
-/***
-\begin{table}[]
-\centering
-\caption{My caption}
-\label{my-label}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Animals} & \textbf{Sports}  & \textbf{Fruits} \\ \hline
-Cat     & Soccer     & Apple  \\ \hline
-Dog     & Basketball & Orange \\ \hline
-\end{tabular}
-\end{table}
-***/
-
-
-
-/***
-\begin{table}[]
-    \begin{center}
-    \resizebox{\textwidth}{!}{
-    \begin{tabular}{|l||c|c|c|c||c|c|c|c|c|c|c|}
-    \hline
-         Method & Decoder & Ch & Sup & Loss & \cellcolor{red!25} Abs Rel & \cellcolor{red!25} Sq Rel & \cellcolor{red!25} RSME & \cellcolor{red!25} RSME\newline log & \cellcolor{blue!25}\delta<1.25 & \cellcolor{blue!25} \delta<1.25^{2} & \cellcolor{blue!25} \delta<1.25^{3} \\ \hline\hline
-        Baseline & standard & 3 &  & standard & 0.115 & 0.903 & 4.863 & 0.193 & 0.877 & 0.959 & 0.981 \\ \hline
-        N2D & normals  & 3 &  & standard & 0.123 & 0.984 & 5.042 & 0.2 & 0.859 & 0.955 & 0.98 \\ \hline
-        4Ch & standard & 4 & fz & standard & 0.141 & 1.313 & 5.545 & 0.22 & 0.834 & 0.942 & 0.974 \\ \hline
-        4Ch  & standard & 4 & sl & standard & 0.255 & 2.237 & 7.892 & 0.342 & 0.594 & 9.832 & 0.927 \\ \hline
-        6Ch & standard & 6 & fz & standard & 0.122 & 0.978 & 5.026 & 0.2 & 0.862 & 0.955 & 0.979 \\ \hline
-        4Ch + N2D & normals & 4 & fz & standard & 0.142 & 1.262 & 5.551 & 0.22 & 0.83 & 0.942 & 0.975 \\ \hline
-        4Ch + N2D + bin & normals & 4 & fz & binary & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        3Ch + N2D + bin & normals & 3 &  & binary & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        4Ch + N2D + cont & normals & 4 & fz & continuous & 0.138 & 1.185 & 5.484 & 0.218 & 0.832 & 0.944 & 0.975 \\ \hline
-        4Ch + N2D + cont & normals & 4 & sl & continuous & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        3Ch + N2D + cont & normals & 3 &  & continuous & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        4Ch + N2D +  0.001 norm & normals & 4 & fz & 0.001 * norm & 0.139 & 1.193 & 5.525 & 0.22 & 0.831 & 0.941 & 0.974 \\ \hline
-        4Ch + N2D +  0.01 norm & normals & 4 & fz & 0.01 * norm & 0.139 & 1.172 & 5.513 & 0.218 & 0.831 & 0.942 & 0.975 \\ \hline
-        4Ch + N2D +  0.1 norm & normals & 4 & fz & 0.1 * norm & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        4Ch + N2D + bin + norm & normals & 4 & fz & bin + norm & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        4Ch + N2D + cont + norm & normals & 4 & fz & cont + norm & 0.141 & 1.276 & 5.549 & 0.221 & 0.832 & 0.941 & 0.974 \\ \hline
-        4Ch + N2D + cont + norm & normals & 4 & sl & cont + norm & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-        3Ch + N2D + cont + norm & normals & 3 &  & cont + norm & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
-    \end{tabular}}
-    \end{center}
-\end{table}
-***/
+|                         | Decoder  | Inp. Channels | Sup. Method | Loss Function           | Abs Rel | Sq Rel | RSME   | RSME log | <1.25 | <1.25Â˛ | <1.25Âł |
+|-------------------------|----------|---------------|-------------|-------------------------|---------|--------|--------|----------|-------|---------|---------|
+| Baseline                | standard | 3             |             | standard                | 0.115   | 0.903  | 4.863  | 0.193    | 0.877 | 0.959   | 0.981   |
+| N2D                     | normals  | 3             |             | standard                | 0.123   | 0.984  | 5.042  | 0.2      | 0.859 | 0.955   | 0.98    |
+| 4Ch                     | standard | 4             | felzenwalb  | standard                | 0.141   | 1.313  | 5.545  | 0.22     | 0.834 | 0.942   | 0.974   |
+| 4Ch                     | standard | 4             | slic        | standard                | 0.255   | 2.237  | 7.892  | 0.342    | 0.594 | 9.832   | 0.927   |
+| 6Ch                     | standard | 6             | felzenwalb  | standard                | 0.122   | 0.978  | 5.026  | 0.2      | 0.862 | 0.955   | 0.979   |
+| 4Ch + N2D               | normals  | 4             | felzenwalb  | standard                | 0.142   | 1.262  | 5.551  | 0.22     | 0.83  | 0.942   | 0.975   |
+| 4Ch + N2D + bin         | normals  | 4             | felzenwalb  | binary                  | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 3Ch + N2D + bin         | normals  | 3             |             | binary                  | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 4Ch + N2D + cont        | normals  | 4             | felzenwalb  | continous               | 0.138   | 1.185  | 5.484  | 0.218    | 0.832 | 0.944   | 0.975   |
+| 4Ch + N2D + cont        | normals  | 4             | slic        | continous               | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 3Ch + N2D + cont        | normals  | 3             |             | continous               | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 4Ch + N2D +  0.001 norm | normals  | 4             | felzenwalb  | 0.001 * normal          | 0.139   | 1.193  | 5.525  | 0.22     | 0.831 | 0.941   | 0.974   |
+| 4Ch + N2D +  0.01 norm  | normals  | 4             | felzenwalb  | 0.01 * normal           | 0.139   | 1.172  | 5.513  | 0.218    | 0.831 | 0.942   | 0.975   |
+| 4Ch + N2D +  0.1 norm   | normals  | 4             | felzenwalb  | 0.1 * normal            | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 4Ch + N2D + bin + norm  | normals  | 4             | felzenwalb  | binary + normal         | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 4Ch + N2D + cont + norm | normals  | 4             | felzenwalb  | continous + normal loss | 0.141   | 1.276  | 5.549  | 0.221    | 0.832 | 0.941   | 0.974   |
+| 4Ch + N2D + cont + norm | normals  | 4             | slic        | continous & normal      | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
+| 3Ch+ N2D + cont + norm  | normals  | 3             |             | continous + normal      | 0.443   | 4.757  | 12.083 | 0.588    | 0.303 | 0.561   | 0.766   |
