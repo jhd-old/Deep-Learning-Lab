@@ -9,11 +9,14 @@ This paper proposes a modified approach for estimation dense depth estimation fr
 <p align="center"><img width=95% src="README/overview_architecture.png"></p>
 
 ## Results
-
+The depth prediction results and the according over-segmentated image with surface normals plotted beginning in the center of mass for each planar structure. The magnitude has been scaled due to visibility reasons.
+On the left the depth map is displayed
 <p align="center"><img width=95% src="README/results.png"></p>
 
 ## Abligation Studay & Comparison with other Networks
 
+In depth display of modification that have been made in this work, including serveral loss functions and two superpixel methods for oversegmentation.
+ 
 |                         | Decoder  | Inp. Channels | Sup. Method | Loss Function           | Abs Rel | Sq Rel | RSME   | RSME log | <1.25 | <1.25Â˛ | <1.25Âł |
 |-------------------------|----------|---------------|-------------|-------------------------|---------|--------|--------|----------|-------|---------|---------|
 | Baseline                | standard | 3             |             | standard                | 0.115   | 0.903  | 4.863  | 0.193    | 0.877 | 0.959   | 0.981   |
