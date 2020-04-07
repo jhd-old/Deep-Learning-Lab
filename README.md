@@ -1,9 +1,4 @@
-Deep Learning Lab
+<img src="README/tud_logo.png" align="right" />
 
-communication via:
-Chanty
-https://cv-lab.chanty.com/chat/96npnoey
+# Piecewise monocular depth estimation by  plane fitting  
 
-project orga via:
-gitkraken
-https://app.gitkraken.com/glo/board/XbVwXDz-owAP0wEP
