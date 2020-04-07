@@ -2,6 +2,11 @@
 
 # Piecewise monocular depth estimation by  plane fitting  
 
+If you find this work interesiting please consider reading our [paper] (https://github.com/jhd-old/Deep-Learning-Lab/blob/master/meetings/2020_02_14_endterm/endterm_final.pdf)
+
+```
+This research is done as part of a research lab at TU Darmstadt by the authors Jan Coccejus Jan Helge Dörsam, Korbinian Kunst and Felix Wirth under the supervision of Jun Hur and Prof. Stefan Roth
+```
 ## Basic Overview
 
 This paper proposes a modified approach for estimation dense depth estimation from monocular images. We model a complex 3D scene via over-segmentation via superpixels as a piecewise planar and rigid approximation. Based on this assumption we represent every planar by surface normals/plane coefficients. In this way we solve the homogeneous depth estimation problem that our baseline architecture Monodepth2 from [Godard et.al](https://github.com/nianticlabs/monodepth2)  2019 suffered. In particular we propose (i) a normal-2-block inside the architecture that estimates surface normal coefficients, (ii) a superpixel-loss that incorporates superpixel information and exploits sharper edges and (iii) a normal loss that ensure homogeneous depth for planar surfaces. We demonstrate the effectiveness of the proposed improvements in an detailed depth-map analysis and show comparable scoring metric with state-of-the-art results on the KITTI Eigen-Zhou split.
@@ -16,7 +21,7 @@ On the left the depth map is displayed
 ## Abligation Studay & Comparison with other Networks
 
 In depth display of modification that have been made in this work, including serveral loss functions and two superpixel methods for oversegmentation.
- 
+
 |                         | Decoder  | Inp. Channels | Sup. Method | Loss Function           | Abs Rel | Sq Rel | RSME   | RSME log | <1.25 | <1.25Â˛ | <1.25Âł |
 |-------------------------|----------|---------------|-------------|-------------------------|---------|--------|--------|----------|-------|---------|---------|
 | Baseline                | standard | 3             |             | standard                | 0.115   | 0.903  | 4.863  | 0.193    | 0.877 | 0.959   | 0.981   |
