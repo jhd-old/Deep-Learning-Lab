@@ -14,7 +14,7 @@ This paper proposes a modified approach for estimation dense depth estimation fr
 ## Abligation Studay & Comparison with other Networks
 
 /***
-\begin{table*}[t]
+\begin{table}[]
     \begin{center}
     \resizebox{\textwidth}{!}{
     \begin{tabular}{|l||c|c|c|c||c|c|c|c|c|c|c|}
@@ -40,6 +40,5 @@ This paper proposes a modified approach for estimation dense depth estimation fr
         3Ch + N2D + cont + norm & normals & 3 &  & cont + norm & 0.443 & 4.757 & 12.083 & 0.588 & 0.303 & 0.561 & 0.766 \\ \hline
     \end{tabular}}
     \end{center}
-    \caption{\textbf{Ablation.} Results for different variants of our model with monocular training on KTTI \cite{KITTI13} test set. All variants trained with the KITTI Eigen-Zhou split \cite{Zhou2017}. The methods using our proposed normal-to-depth block are denoted by N2D (normals decoder). The number of input channels (Ch) have been modified to 3, 4 or 6. The method to calculate the superpixel used by the variant is denoted by fz for Felzenwalb's method \cite{Felzen2004} or by sl for SLIC \cite{slic2010}.}    
-\end{table*}
+\end{table}
 ***/
