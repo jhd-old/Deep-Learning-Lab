@@ -2,11 +2,11 @@
 
 # Piecewise monocular depth estimation by  plane fitting  
 
-If you find this work interesiting please consider reading our [paper](https://github.com/jhd-old/Deep-Learning-Lab/blob/master/meetings/2020_02_14_endterm/endterm_final.pdf)
+If you find this work interesting please consider reading our [paper](https://github.com/jhd-old/Deep-Learning-Lab/blob/master/meetings/2020_02_14_endterm/endterm_final.pdf)
 
 ```
 This research is done as part of a research lab at TU Darmstadt by the authors 
-Jan Coccejus Jan Helge Dörsam, Korbinian Kunst and Felix Wirth 
+Jan Coccejus, Jan Helge Dörsam, Korbinian Kunst and Felix Wirth 
 under the supervision of Jun Hur and Prof. Stefan Roth
 ```
 ## Basic Overview
