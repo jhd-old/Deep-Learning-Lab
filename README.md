@@ -11,16 +11,16 @@ under the supervision of Jun Hur and Prof. Stefan Roth
 ```
 ## Basic Overview
 
-This paper proposes a modified approach for estimation dense depth estimation from monocular images. We model a complex 3D scene via over-segmentation via superpixels as a piecewise planar and rigid approximation. Based on this assumption we represent every planar by surface normals/plane coefficients. In this way we solve the homogeneous depth estimation problem that our baseline architecture Monodepth2 from [Godard et.al](https://github.com/nianticlabs/monodepth2)  2019 suffered. In particular we propose (i) a normal-2-block inside the architecture that estimates surface normal coefficients, (ii) a superpixel-loss that incorporates superpixel information and exploits sharper edges and (iii) a normal loss that ensure homogeneous depth for planar surfaces. We demonstrate the effectiveness of the proposed improvements in an detailed depth-map analysis and show comparable scoring metric with state-of-the-art results on the KITTI Eigen-Zhou split.
+This paper proposes a modified approach for dense depth estimation from monocular images. We model a complex 3D scene via over-segmentation via superpixels as a piecewise planar and rigid approximation. Based on this assumption we represent every planar by surface normals/plane coefficients. In this way we solve the homogeneous depth estimation problem that our baseline architecture Monodepth2 from [Godard et.al](https://github.com/nianticlabs/monodepth2) 2019 suffered. In particular we propose (i) a normal-2-block inside the architecture that estimates surface normal coefficients, (ii) a superpixel-loss that incorporates superpixel information and exploits sharper edges and (iii) a normal loss that ensure homogeneous depth for planar surfaces. We demonstrate the effectiveness of the proposed improvements in an detailed depth-map analysis and show comparable scoring metric with state-of-the-art results on the KITTI Eigen-Zhou split.
 
 <p align="center"><img width=95% src="README/overview_architecture.png"></p>
 
 ## Results
 The depth prediction results and the according over-segmentated image with surface normals plotted beginning in the center of mass for each planar structure. The magnitude has been scaled due to visibility reasons.
-On the left the depth map is displayed
+On the left the depth map is displayed.
 <p align="center"><img width=95% src="README/results.png"></p>
 
-## Abligation Studay & Comparison with other Networks
+## Ablation study & comparison with other Networks
 
 In depth display of modification that have been made in this work, including serveral loss functions and two superpixel methods for oversegmentation.
 
