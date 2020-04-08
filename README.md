@@ -24,7 +24,7 @@ On the left the depth map is displayed.
 
 In depth display of modification that have been made in this work, including serveral loss functions and two superpixel methods for oversegmentation.
 
-|                         | Decoder  | Inp. Channels | Sup. Method | Loss Function           | Abs Rel | Sq Rel | RSME   | RSME log | <1.25 | <1.25Â˛ | <1.25Âł |
+|                         | Decoder  | Inp. Channels | Sup. Method | Loss Function           | Abs Rel | Sq Rel | RSME   | RSME log | δ<1.25 | δ<1.25² | δ<1.25³ |
 |-------------------------|----------|---------------|-------------|-------------------------|---------|--------|--------|----------|-------|---------|---------|
 | Baseline                | standard | 3             |             | standard                | 0.115   | 0.903  | 4.863  | 0.193    | 0.877 | 0.959   | 0.981   |
 | N2D                     | normals  | 3             |             | standard                | 0.123   | 0.984  | 5.042  | 0.2      | 0.859 | 0.955   | 0.98    |
