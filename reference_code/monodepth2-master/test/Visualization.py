@@ -40,12 +40,22 @@ rgba_norm = (rgba-np.min(rgba))/(np.max(rgba)-np.min(rgba))
 
 # navigate to the folder test 
 # load the image and data
-path = 'image1_vector_map.npy'
+path = '4ch + Normal Decoder + Continuous Loss/image1_vector_map.npy'
 data = np.load(path)
 #normals = data.reshape(192,640,3)
 xdata = data[0,0,:,:]
 ydata = data[0,1,:,:]
 zdata = data[0,2,:,:]
+
+x = np.mean(xdata)
+y = np.mean(ydata)
+z = np.mean(zdata)
+
+stdx = np.std(xdata)
+stdy = np.std(ydata)
+stdz = np.std(zdata)
+
+print(' meanx = %s +- %s, meany = %s +- %s , meanz = %s +-%s' %(x,stdx,y, stdy, z, stdz))
 
 #calculate magnitude
 mag = np.sqrt(xdata**2 + ydata**2  + zdata**2)
@@ -110,28 +120,28 @@ for i in np.unique(segments_img):
 
 #plt.imshow(zdata, cmap='viridis')
 
-# temp_xdata = np.where(segments_img == 148 , xdata , float('nan'))
-# temp_ydata = np.where(segments_img == 148 , ydata , float('nan'))
-# temp_zdata = np.where(segments_img == 148 , zdata , float('nan'))
-# x = np.nanmean(temp_xdata)
-# y = np.nanmean(temp_ydata)
-# z = np.nanmean(temp_zdata)
+temp_xdata = np.where(segments_img == 148 , xdata , float('nan'))
+temp_ydata = np.where(segments_img == 148 , ydata , float('nan'))
+temp_zdata = np.where(segments_img == 148 , zdata , float('nan'))
+x = np.nanmean(temp_xdata)
+y = np.nanmean(temp_ydata)
+z = np.nanmean(temp_zdata)
 
-# stdx = np.nanstd(temp_xdata)
-# stdy = np.nanstd(temp_ydata)
-# stdz = np.nanstd(temp_zdata)
-# r = temp_xdata**2 + temp_ydata**2 + temp_zdata**2
-# stdr = np.nanstd(r)
-# meanr = np.nanmean(r)
+stdx = np.nanstd(temp_xdata)
+stdy = np.nanstd(temp_ydata)
+stdz = np.nanstd(temp_zdata)
+r = temp_xdata**2 + temp_ydata**2 + temp_zdata**2
+stdr = np.nanstd(r)
+meanr = np.nanmean(r)
 
-# elv = np.degrees(np.arccos(temp_zdata/r))
-# azi = np.degrees(np.arctan(temp_xdata/temp_ydata))
-# meanelv = np.nanmean(elv)
-# meanazi = np.nanmean(azi)
-# stdelv = np.nanstd(elv)
-# stdazi = np.nanstd(azi)
+elv = np.degrees(np.arccos(temp_zdata/r))
+azi = np.degrees(np.arctan(temp_xdata/temp_ydata))
+meanelv = np.nanmean(elv)
+meanazi = np.nanmean(azi)
+stdelv = np.nanstd(elv)
+stdazi = np.nanstd(azi)
 
-# print('azi = %s +- %s, elv =  %s +- %s, r = %s +- %s, meanx = %s +- %s, meany = %s +- %s , meanz = %s +-%s' %(meanazi, stdazi, meanelv, stdelv, meanr, stdr, x,stdx,y, stdx, z, stdz))
+print('azi = %s +- %s, elv =  %s +- %s, r = %s +- %s, meanx = %s +- %s, meany = %s +- %s , meanz = %s +-%s' %(meanazi, stdazi, meanelv, stdelv, meanr, stdr, x,stdx,y, stdy, z, stdz))
 
 # initialize meshgrid
 x = np.arange(640)
