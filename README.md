@@ -16,7 +16,11 @@ This paper proposes a modified approach for dense depth estimation from monocula
 <p align="center"><img width=95% src="README/overview_architecture.png"></p>
 
 ## Results
-The depth prediction results and the according over-segmentated image with surface normals plotted beginning in the center of mass for each planar structure. The magnitude has been scaled due to visibility reasons.
+Results  from  a  single  image. 
+On the left: 
+Our depth prediction results on a randomly picked image from KITTI
+on the right:
+To the chosen image  the  according  over-segmentated image with surface normals as produced by our network are plotted beginning inthe center of mass for each planar structure.  The magnitude hasbeen scaled due to visibility reasons
 On the left the depth map is displayed.
 <p align="center"><img width=95% src="README/results.png"></p>
 
