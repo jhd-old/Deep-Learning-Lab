@@ -2,9 +2,9 @@ import cv2
 # import torch
 import numpy as np
 import surface_normal_3
-import normal_to_depth
+import old_approaches
 import torch
-import normal2disp
+import normal_to_depth
 
 
 #depth =
@@ -21,8 +21,8 @@ if __name__ == "__main__":
     # surface_normal_2.surface_normal('data/test_img.png')
     normal, d_im = surface_normal_3.surface_normal('data/test_img.png')
 
-    depth = normal_to_depth.normal_to_depth(K, d_im, normal)
-    disp = normal_to_depth.depth_to_disp(K, depth)
+    depth = old_approaches.normal_to_depth(K, d_im, normal)
+    disp = old_approaches.depth_to_disp(K, depth)
 
     cv2.imwrite("normal2depth.png", depth * 10255)
     cv2.imwrite("normal2disp.png", disp / 1838292 *2)
@@ -49,8 +49,8 @@ if __name__ == "__main__":
     normal_tensor[0, 2, :, :] = normal_np[2]
 
     # generate depth and disparity
-    new_depth = normal2disp.normal_to_depth(K_inv, normal_tensor)
-    new_disp = normal2disp.depth_to_disp(K, new_depth)
+    new_depth = normal_to_depth.normal_to_depth(K_inv, normal_tensor)
+    new_disp = normal_to_depth.depth_to_disp(K, new_depth)
 
     # remove not used dimensions
     new_depth = torch.squeeze(new_depth)
