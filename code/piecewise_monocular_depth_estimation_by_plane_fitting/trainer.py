@@ -22,7 +22,6 @@ from kitti_utils import *
 from superpixel_utils import convert_rgb_to_superpixel
 from layers import *
 from utils import *
-from skimage.segmentation import find_boundaries
 
 
 class Trainer:
@@ -124,6 +123,11 @@ class Trainer:
         print("Training is using:\n  ", self.device)
 
         # data
+
+        #######
+        # MOD
+        # ADDED OWN CUSTOM DATASET called SuperpixelDataset
+        ######
         datasets_dict = {"kitti": datasets.KITTIRAWDataset,
                          "kitti_odom": datasets.KITTIOdomDataset,
                          "kitti_superpixel": datasets.SuperpixelDataset}
@@ -138,6 +142,10 @@ class Trainer:
         val_filenames = readlines(fpath.format("val"))
         img_ext = '.png' if self.opt.png else '.jpg'
 
+        #######
+        # MOD
+        # FORCE TO USE RIGHT DATASET DEPENDING ON PARSED OPTIONS
+        ######
         # Check if superpixel dataset is used and create superpixel image
         if "superpixel" in self.opt.dataset or self.opt.superpixel_mask_loss_binary or self.opt.normal_loss or \
                 self.opt.superpixel_mask_loss_continuous:

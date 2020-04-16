@@ -11,6 +11,10 @@ from skimage.color import label2rgb
 from skimage.segmentation import felzenszwalb, slic
 from options import MonodepthOptions
 
+####################
+# UTILS TO USE FOR SUPERPIXEL
+###################
+
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning
@@ -21,6 +25,17 @@ def pil_loader(path):
 
 
 def load_superpixel_data(path, method, arguments, img_ext):
+    """
+    load superpixel data from file. Returns int32 numpy matrix. Multiple fallbacks to be sure superpixel data will be
+    returned.
+
+    :param path: path to load file from.
+    :param method: superpixel method to use
+    :param arguments: arguments for superpixel method (parameters)
+    :param img_ext: image file extension
+    :return: superpixel data
+    :rtype: int32 numpy array
+    """
 
     # check if file exists
     # it really should, but just to be safe
@@ -99,13 +114,18 @@ def load_superpixel_from_archive(file_path):
 def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, superpixel_arguments=[],
                               img_ext='.jpg', path_insert="super_", num_channel=4):
     """
+    Converts RGB image to superpixel data for given superpixel method and parameters. Can convert multiple images at
+    once. Saves superpixel data to RGB image folder with path_insert as pre.
 
-    :param path_to_raw_data:
-    :param camera:
-    :param save_path:
-    :param superpixel_method:
-    :return:
+    :param dataset_path: path to KITTI dataset
+    :param paths: path of the images to convert
+    :param superpixel_method: superpixel method to use
+    :param superpixel_arguments: arguments for superpixel method (parameters)
+    :param img_ext: image file extension
+    :param path_insert: naming for superpixel file.
+    :param num_channel: number of input channels, which will be used
     """
+
     n_prints = 500
     converted = 0
     already_converted = 0
@@ -126,7 +146,8 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
         raise NotImplementedError("Length of given superpixel arguments is not implemented!")
 
     for path in paths:
-        state = convert_func(dataset_path, path, superpixel_method, superpixel_arguments, img_ext, path_insert, num_channel)
+        state = convert_func(dataset_path, path, superpixel_method, superpixel_arguments, img_ext, path_insert,
+                             num_channel)
 
         if state == ConversionState.already_converted:
             already_converted += 1
@@ -144,12 +165,17 @@ def convert_rgb_to_superpixel(dataset_path, paths, superpixel_method=None, super
 def convert_rgb_to_superpixel_multiprocess(dataset_path, paths, superpixel_method=None, superpixel_arguments=[],
                               img_ext='.jpg', path_insert="super_", num_channel=4):
     """
+    Converts RGB image to superpixel data for given superpixel method and parameters USING multiprocessing.
+    Can convert multiple images at once.
+    Saves superpixel data to RGB image folder with path_insert as pre.
 
-    :param path_to_raw_data:
-    :param camera:
-    :param save_path:
-    :param superpixel_method:
-    :return:
+    :param dataset_path: path to KITTI dataset
+    :param paths: path of the images to convert
+    :param superpixel_method: superpixel method to use
+    :param superpixel_arguments: arguments for superpixel method (parameters)
+    :param img_ext: image file extension
+    :param path_insert: naming for superpixel file.
+    :param num_channel: number of input channels, which will be used
     """
 
     if superpixel_arguments is None:
@@ -188,7 +214,20 @@ def convert_rgb_to_superpixel_multiprocess(dataset_path, paths, superpixel_metho
 
 def convert_func(dataset_path, path=None, superpixel_method=None, superpixel_arguments=[], img_ext='.jpg',
                  path_insert="super_", num_channel=4):
-    # TODO: change this back
+    """
+        Converts RGB image to superpixel data for given superpixel method and parameters USING multiprocessing.
+        Can convert multiple images at once.
+        Saves superpixel data to RGB image folder with path_insert as pre.
+
+        :param dataset_path: path to KITTI dataset
+        :param paths: path of the images to convert
+        :param superpixel_method: superpixel method to use
+        :param superpixel_arguments: arguments for superpixel method (parameters)
+        :param img_ext: image file extension
+        :param path_insert: naming for superpixel file.
+        :param num_channel: number of input channels, which will be used
+        """
+
     # for now force to only save as 1 channel with indices
     num_channel = 4
 
@@ -425,47 +464,47 @@ def convert_all_in_folder(folder, superpixel_method='fz', superpixel_arguments=[
     return converted
 
 
-def calc_superpixel(img, method="fz", args=[]):
+def calc_superpixel(img, s_method="fz", s_args=[]):
     """
     Calculates superpixels from given image.
 
-    :param img:
-    :param method:
-    :param args:
-    :return:
+    :param img: image to calculate superpixel for
+    :param s_method: superpixel method to use
+    :param s_args: arguments (parameters) for superpixel method
+    :return: return superpixel
     """
-    if method == "fz":
-        if args is not None:
-            if len(args) is 3:
-                scale = args[0]
-                sigma = args[1]
-                min_size = args[2]
+    if s_method == "fz":
+        if s_args is not None:
+            if len(s_args) is 3:
+                scale = s_args[0]
+                sigma = s_args[1]
+                min_size = s_args[2]
                 sup = felzenszwalb(img, scale=int(scale), sigma=sigma, min_size=int(min_size))
             else:
                 sup = felzenszwalb(img)
         else:
             sup = felzenszwalb(img)
 
-    elif method == "slic":
-        if args is not None:
-            if len(args) is 3:
-                num_seg = args[0]
-                comp = args[1]
-                sig = args[2]
+    elif s_method == "slic":
+        if s_args is not None:
+            if len(s_args) is 3:
+                num_seg = s_args[0]
+                comp = s_args[1]
+                sig = s_args[2]
                 sup = slic(img, n_segments=int(num_seg), compactness=comp, sigma=sig)
             else:
                 sup = slic(img)
         else:
             sup = slic(img)
 
-    elif method == "watershed":
+    elif s_method == "watershed":
         raise NotImplementedError
 
-    elif method == "quickshift":
+    elif s_method == "quickshift":
         raise NotImplementedError
 
     else:
-        raise TypeError("Given method not valid!")
+        raise TypeError("Given s_method not valid!")
 
     return sup
 
@@ -483,17 +522,6 @@ def avg_image(image, label):
     image = label2rgb(label, image, kind='avg')
 
     return image
-
-
-class KittiCamera(IntEnum):
-    """
-    Camera to use
-    """
-
-    gray_left = 0
-    gray_right = 1
-    color_left = 2
-    color_right = 3
 
 
 class ConversionState(IntEnum):
