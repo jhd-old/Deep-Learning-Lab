@@ -17,6 +17,8 @@ from kitti_utils import generate_depth_map
 from superpixel_utils import load_superpixel_data, avg_image
 from .mono_dataset import MonoDataset
 
+# MOD
+
 
 class KITTIDataset(MonoDataset):
     """Superclass for different types of KITTI dataset loaders

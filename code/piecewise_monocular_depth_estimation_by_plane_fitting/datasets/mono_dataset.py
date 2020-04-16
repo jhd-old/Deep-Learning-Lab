@@ -14,6 +14,7 @@ import torch.utils.data as data
 from PIL import Image  # using pillow-simd for increased speed
 from torchvision import transforms
 
+# MOD
 
 def pil_loader(path):
     # open path as file to avoid ResourceWarning

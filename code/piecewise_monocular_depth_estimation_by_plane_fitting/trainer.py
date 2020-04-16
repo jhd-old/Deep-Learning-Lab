@@ -505,7 +505,6 @@ class Trainer:
         # added return
         return outputs
 
-
     def avg_normals_on_sp(self, superpixel, normals):
 
         """
@@ -526,10 +525,6 @@ class Trainer:
             normals = torch.where(superpixel == i,  sp[~ torch.isnan(sp)].mean(), normals)
 
         return normals
-
-
-
-
 
     def compute_normals_loss(self, superpixel, normals):
 
@@ -593,6 +588,7 @@ class Trainer:
         #        normals_loss += np.sum(np.std(normals_in_one_superpixel_area, axis=1))
 
         return normals_loss
+
 
     def compute_normals_loss_np(self, superpixel, normals, use_centroid=False):
 

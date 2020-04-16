@@ -15,6 +15,8 @@ from options import MonodepthOptions
 from utils import readlines
 from superpixel_utils import convert_rgb_to_superpixel
 
+# MOD
+
 cv2.setNumThreads(0)  # This speeds up evaluation 5x on our unix systems (OpenCV 3.3.1)
 
 splits_dir = os.path.join(os.path.dirname(__file__), "splits")
