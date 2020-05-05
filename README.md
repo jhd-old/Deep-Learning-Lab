@@ -2,7 +2,7 @@
 
 # Piecewise monocular depth estimation by  plane fitting  
 
-If you find this work interesting please consider reading our [paper](https://github.com/jhd-old/Deep-Learning-Lab/blob/master/meetings/2020_02_14_endterm/endterm_final.pdf)
+If you find this work interesting please consider reading our [paper](https://github.com/jhd-old/Deep-Learning-Lab/blob/master/Piecewise%20Monocular%20Depth%20Estimation%20by%20Plane%20Fitting.pdf)
 
 ```
 This research is done as part of a research lab at TU Darmstadt by the authors 
